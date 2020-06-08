@@ -37,7 +37,9 @@
                 },
                 "vscodePluginDemo.testArr": {
                     "type": "array",
-                    "default": [1],
+                    "default": [
+                        1
+                    ],
                     "description": "测试数组"
                 }
             }
@@ -191,11 +193,11 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "eslint": "^4.11.0",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "typescript": "^3.9.5",
+        "vscode": "^1.1.37",
+        "eslint": "^7.2.0",
+        "@types/node": "^14.0.11",
+        "@types/mocha": "^7.0.2"
     },
     "license": "SEE LICENSE IN LICENSE.txt",
     "bugs": {
@@ -205,5 +207,8 @@
         "type": "git",
         "url": "https://github.com/sxei/vscode-plugin-demo"
     },
-    "homepage": "https://github.com/sxei/vscode-plugin-demo/blob/master/README.md"
+    "homepage": "https://github.com/sxei/vscode-plugin-demo/blob/master/README.md",
+    "dependencies": {
+        "js-yaml": "^3.13.1"
+    }
 }
