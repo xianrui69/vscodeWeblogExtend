@@ -91,6 +91,12 @@ const util = {
     showInfo: function(info) {
         vscode.window.showInformationMessage(info);
     },
+    /**
+     * 弹出提示信息-状态栏
+     */
+    showBarMessage: function(info, hideTime = null) {
+        vscode.window.setStatusBarMessage(info, hideTime);
+    },
     findStrInFolder: function(folderPath, str) {
 
     },

@@ -1,17 +1,17 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-05-26 21:15:06
+ * @LastEditTime: 2020-06-10 10:57:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\extension.js
  */ 
 const vscode = require('vscode');
+const util = require('./util');
 const fs = require('fs');
-const sqliteHelp = require('./sqliteHelp');
+const sqliteHelp = require('./SqliteHelper/sqliteHelper');
 
-
-const util = {
+const _this = {
     sqliteHelp: null,
     /**
      * 初始化 判断是否存在weblog.db文件
@@ -24,8 +24,8 @@ const util = {
                 //寻找\Enterprise.Web\weblog.db
                 if(fs.existsSync(workPath = (workPath + '\\Enterprise.Web\\weblog.db'))){
                     this.sqliteHelp = sqliteHelp(workPath)
-                    vscode.window.showInformationMessage('检测到拥有weblog.db，已激活weblog功能');
-                    vscode.window.setStatusBarMessage('检测到拥有weblog.db，已激活weblog功能', 5000);
+                    util.showInfo('检测到拥有weblog.db，已激活weblog功能')
+                    util.showBarMessage('检测到拥有weblog.db，已激活weblog功能', 5000)
                 }
             }
         }
@@ -38,7 +38,7 @@ const util = {
         ($BeginTime is null or $BeginTime='' or date>$BeginTime) limit $a,$b`, {$a:0,$b:2}
             ,function(err,rows){
                 var str = JSON.stringify(rows);
-                vscode.window.showInformationMessage(str);
+                util.showBarMessage(str);
             }
         )
     },
@@ -88,11 +88,11 @@ const util = {
                 this.sqliteHelp.all(commandStr + orderStr, _searchLogInputDto,(err,rows)=>{
                     let data = { total: parseInt(totalStr), rows: rows }
                     callBack(err, data)
-                    vscode.window.setStatusBarMessage('查询成功', 3000)
+                    util.showBarMessage('查询成功', 5000)
                 })
             }else callBack(err)
         })
     }
 };
-util.init();
-module.exports = util.sqliteHelp ? util: {};
+_this.init();
+module.exports = _this.sqliteHelp ? _this: {};
