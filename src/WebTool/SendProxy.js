@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-10 10:37:51
- * @LastEditTime: 2020-06-10 14:24:52
+ * @LastEditTime: 2020-06-12 11:01:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\webTool\sds.js
@@ -47,22 +47,57 @@ module.exports = {
             if (err)
                 util.showError('写文件错误')
         });//记录最后一次请求 方便调试
-        fn = code_dir + 'requests' + UUID.v1() + '.json'//产生唯一的文件 方便多文档读写
+        fn = code_dir + 'requests_' + UUID.v1() + '.json'//产生唯一的文件 方便多文档读写
         fs.writeFile(fn, jsonStr, function(err) { 
             if (err) { 
                 util.showError('写文件错误')//异常抛出
                 return console.error(err);
             }
-            exec(`python ${code_dir}Request.py ${fn}`,{ encoding: null}, function(error,stdout,stderr){
+            let cmdStr = `python ${code_dir}Request.py ${fn}`
+            exec(`python Request.py ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
                 setTimeout(() => {
                     fs.unlinkSync(fn);//删除请求的文件记录
                 }, 20)
+                cmdStr = cmdStr//用于看cmd执行的命令是什么样的
                 let stdoutStr = iconv.decode(stdout, encoding)
                 let stderrStr = iconv.decode(stderr, encoding)
                 if(stdoutStr.length >1){//返回值
                     callBack(stdoutStr)
                 }else if(error){
                     _data = _data
+                    debugger
+                    callBack('错误堆栈 : '+stderrStr)
+                } else {
+                    callBack('')
+                    console.log('没有输出');
+                }
+            });
+        });
+    },
+    Send(data, callBack){
+        if (typeof(callBack) != 'function'){
+            util.showError('ReSendByRow调用必须传递 callback 函数类型')
+            return;
+        }
+        let jsonStr = JSON.stringify(data);
+        let fn = code_dir + 'send_' + UUID.v1() + '.json'//产生唯一的文件 方便多文档读写
+        fs.writeFile(fn, jsonStr, function(err) { 
+            if (err) { 
+                util.showError('写文件错误')//异常抛出
+                return console.error(err);
+            }
+            let cmdStr = `python ${code_dir}Request.py ${fn}`
+            exec(`python Request.py ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
+                setTimeout(() => {
+                    fs.unlinkSync(fn);//删除请求的文件记录
+                }, 120)
+                cmdStr = cmdStr//用于看cmd执行的命令是什么样的
+                let stdoutStr = iconv.decode(stdout, encoding)
+                let stderrStr = iconv.decode(stderr, encoding)
+                if(stdoutStr.length >1){//返回值
+                    callBack(stdoutStr)
+                }else if(error){
+                    data = data
                     debugger
                     callBack('错误堆栈 : '+stderrStr)
                 } else {

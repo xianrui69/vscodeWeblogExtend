@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-05-22 10:27:02
+ * @LastEditTime: 2020-06-11 11:51:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\view\custom-welcome.html
@@ -12,7 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>自定义欢迎页</title>
-    <link rel="stylesheet" href="../../lib/bootstrap-3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../../../lib/bootstrap-3.3.1/css/bootstrap.min.css">
     <style>
         html, body, #app {
             height: 100%;
@@ -105,12 +105,15 @@
         <div v-for="(value, name) in config">
             {{ name }}: {{ value }}
         </div>
-
+        <json-view :data="config"/>
+        bootstrap 影响 json-view样式
     </div>
-    <script src="../../lib/jquery/jquery.min.js"></script>
-    <script src="../../lib/bootstrap-3.3.1/js/bootstrap.min.js"></script>
-    <script src="../../lib/vue-2.5.17/vue.js"></script>
-    <script src="../../src/view/custom-welcome.js"></script>
+    <script src="../../../lib/jquery/jquery.min.js"></script>
+    <script src="../../../lib/bootstrap-3.3.1/js/bootstrap.min.js"></script>
+    <script src="../../../lib/vue-2.5.17/vue.js"></script>
+    <script src="../../../src/view/MessageForwarding.js"></script>
+    <script src="../../../src/view/vue-json-view.js"></script>
+    <script src="../../../src/view/welcome/custom-welcome.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="build/index.js"></script>
+    <style>
+        #app{
+            height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <json-view :data="json"/>
+    </div>
+    <script>
+        window.onload = function(){
+           new Vue({
+               el:'#app',
+               data(){
+                return {
+                    json:{a:1,b:{c:'afdsf',d:{e:1,c:'afdsf',d:{e:1,c:'afdsf',d:{e:1,c:'afdsf',d:{e:1,c:'afdsf',d:{e:1,c:'afdsf',d:{e:1}}}}}}}}
+                }
+               },
+               components:{
+                    jsonView:window['vue-json-view'].default
+               }
+           })
+        }
+    </script>
+</body>
+</html>

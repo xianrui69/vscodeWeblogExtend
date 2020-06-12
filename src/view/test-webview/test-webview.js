@@ -2,7 +2,10 @@ const testMode = false; // 为true时可以在浏览器打开不报错
 // vscode webview 网页和普通网页的唯一区别：多了一个acquireVsCodeApi方法
 const vscode = testMode ? {} : acquireVsCodeApi();
 const callbacks = {};
+import Vue from 'vue'
+import JsonViewer from 'vue-json-viewer'
 
+Vue.use(JsonViewer)
 /**
  * 调用vscode原生api
  * @param data 可以是类似 {cmd: 'xxx', param1: 'xxx'}，也可以直接是 cmd 字符串
@@ -70,3 +73,20 @@ new Vue({
         }
     }
 });
+
+new Vue({
+    el: '#jsonData',
+    data() {
+      return {
+        jsonData: {
+          total: 25,
+          limit: 10,
+          skip: 0,
+          links: {
+            previous: undefined,
+            next: function () {},
+          }
+        }
+      }
+   }
+  });

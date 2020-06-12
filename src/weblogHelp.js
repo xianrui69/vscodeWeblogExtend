@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-06-10 10:57:11
+ * @LastEditTime: 2020-06-12 11:35:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\extension.js
@@ -24,7 +24,6 @@ const _this = {
                 //寻找\Enterprise.Web\weblog.db
                 if(fs.existsSync(workPath = (workPath + '\\Enterprise.Web\\weblog.db'))){
                     this.sqliteHelp = sqliteHelp(workPath)
-                    util.showInfo('检测到拥有weblog.db，已激活weblog功能')
                     util.showBarMessage('检测到拥有weblog.db，已激活weblog功能', 5000)
                 }
             }

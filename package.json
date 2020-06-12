@@ -7,7 +7,7 @@
         "plugin",
         "demo"
     ],
-    "version": "1.0.3",
+    "version": "1.0.4",
     "publisher": "sxei",
     "engines": {
         "vscode": "^1.27.0"
@@ -41,6 +41,21 @@
                         1
                     ],
                     "description": "测试数组"
+                },
+                "vscodePluginDemo.autoUrl": {
+                    "type": "string",
+                    "default": "http://localhost:9076",
+                    "description": "重发使用的url"
+                },
+                "vscodePluginDemo.autoUserNo": {
+                    "type": "string",
+                    "default": "zjhn",
+                    "description": "重发使用的自动登录用户名（采取打开插件时获取token）"
+                },
+                "vscodePluginDemo.autoPWD": {
+                    "type": "string",
+                    "default": "123456",
+                    "description": "重发使用的自动登录密码"
                 }
             }
         },
@@ -72,6 +87,10 @@
             {
                 "command": "extension.demo.showWelcome",
                 "title": "显示自定义欢迎页"
+            },
+            {
+                "command": "extension.demo.showJson",
+                "title": "JSON展示"
             }
         ],
         "keybindings": [
@@ -193,11 +212,14 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
+        "@types/mocha": "^7.0.2",
+        "@types/node": "^14.0.11",
+        "eslint": "^7.2.0",
+        "ts-loader": "^7.0.5",
         "typescript": "^3.9.5",
         "vscode": "^1.1.37",
-        "eslint": "^7.2.0",
-        "@types/node": "^14.0.11",
-        "@types/mocha": "^7.0.2"
+        "webpack": "^4.43.0",
+        "webpack-cli": "^3.3.11"
     },
     "license": "SEE LICENSE IN LICENSE.txt",
     "bugs": {
@@ -205,15 +227,16 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/sxei/vscode-plugin-demo"
+        "url": "https://github.com/xianrui69/vscodeWeblogExtend"
     },
-    "homepage": "https://github.com/sxei/vscode-plugin-demo/blob/master/README.md",
+    "homepage": "https://github.com/xianrui69/vscodeWeblogExtend/blob/master/README.md",
     "dependencies": {
         "electron": "^7.2.4",
         "express": "^4.17.1",
         "js-yaml": "^3.13.1",
         "json5": "^2.1.3",
         "sqlite3": "^4.2.0",
-        "uuid": "^8.1.0"
+        "uuid": "^8.1.0",
+        "vue-json-viewer": "^2.2.11"
     }
 }

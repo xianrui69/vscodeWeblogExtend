@@ -1,23 +1,15 @@
+/*
+ * @Author: your name
+ * @Date: 2020-05-22 14:38:51
+ * @LastEditTime: 2020-06-11 11:15:45
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \vscode-plugin-demo-master\src\webview.js
+ */ 
 const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
-const util = require('./util');
-
-/**
- * 从某个HTML文件读取能被Webview加载的HTML内容
- * @param {*} context 上下文
- * @param {*} templatePath 相对于插件根目录的html文件相对路径
- */
-function getWebViewContent(context, templatePath) {
-    const resourcePath = util.getExtensionFileAbsolutePath(context, templatePath);
-    const dirPath = path.dirname(resourcePath);
-    let html = fs.readFileSync(resourcePath, 'utf-8');
-    // vscode不支持直接加载本地资源，需要替换成其专有路径格式，这里只是简单的将样式和JS的路径替换
-    html = html.replace(/(<link.+?href="|<script.+?src="|<img.+?src=")(.+?)"/g, (m, $1, $2) => {
-        return $1 + vscode.Uri.file(path.resolve(dirPath, $2)).with({ scheme: 'vscode-resource' }).toString() + '"';
-    });
-    return html;
-}
+const util = require('../util');
 
 /**
  * 执行回调函数
@@ -83,7 +75,7 @@ module.exports = function(context) {
             }
         );
         let global = { projectPath, panel};
-        panel.webview.html = getWebViewContent(context, 'src/view/test-webview.html');
+        panel.webview.html = util.Web.getWebViewContent(context, 'src/view/test-webview/test-webview.html');
         panel.webview.onDidReceiveMessage(message => {
             if (messageHandler[message.cmd]) {
                 messageHandler[message.cmd](global, message);
