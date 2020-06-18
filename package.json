@@ -69,6 +69,10 @@
                 "title": "显示最近调用"
             },
             {
+                "command": "extension.apiControllerJump",
+                "title": "跳转到api控制器"
+            },
+            {
                 "command": "extension.demo.getCurrentFilePath",
                 "title": "获取当前文件(夹)路径"
             },
@@ -109,6 +113,11 @@
         ],
         "menus": {
             "editor/context": [
+                {
+                    "when": "resourceLangId != csharp",
+                    "command": "extension.apiControllerJump",
+                    "group": "navigation@8"
+                },
                 {
                     "when": "resourceLangId == csharp",
                     "command": "extension.showLastWebLog",

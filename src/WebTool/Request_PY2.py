@@ -1,3 +1,4 @@
+#coding=utf-8
 '''
 @Author: your name
 @Date: 2020-06-09 11:41:12
@@ -6,9 +7,10 @@
 @Description: In User Settings Edit
 @FilePath: \vscode-plugin-demo-master\src\py_test.py
 '''
-# -*- coding: utf-8 -*-
 import sys,json,os,requests,gzip,brotli,io
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
+reload(sys)
+sys.setdefaultencoding('UTF-8')
+reload(sys)
 def ajax(data):
     url = data['Url'] + data['Query']
     head = {}
@@ -22,10 +24,14 @@ def ajax(data):
             head[pn] = ';'.join(head[pn])
     if p == None or p == '': p = {}
     resp = None
-    if data['Method'].upper() == 'POST':
-        resp = requests.post(url,p,headers=head)
-    else:
-        resp = requests.get(url,headers=head);
+    try:
+        if data['Method'].upper() == 'POST':
+            resp = requests.post(url,p,headers=head)
+        else:
+            resp = requests.get(url,headers=head);
+    except BaseException as identifier:
+        print '连接超时！'
+        return
     if resp.status_code == 200:
         str = ''
         reEncoding = resp.headers['Content-Encoding']
@@ -38,19 +44,19 @@ def ajax(data):
                 elif reEncoding == 'gzip':
                     str = gzip.decompress(resp.content).decode('utf-8')
             except BaseException as identifier:
-                print('解码异常 请调试')
+                print '解码异常 请调试'
                 pass
-        if str != '': print(str)#
+        if str != '': print str#
     else:
         try:
             resp.encoding='utf-8'
-            print(resp.text)
+            print resp.text
             pass
-        except expression as identifier:
+        except BaseException as identifier:
             data = gzip.decompress(resp.content).decode("utf-8")
-            print(data)
-            pass
-filePath = os.getcwd() + "\\lastRequests.json"#当前目录下
+            print data
+            pass#
+filePath = os.getcwd() + "\\src\\WebTool\\lastRequests.json"#当前目录下
 if len(sys.argv) > 1:
     filePath = sys.argv[1]
 if os.path.exists(filePath):

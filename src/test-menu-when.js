@@ -11,19 +11,11 @@ const util = require('./util');
 const weblogHelp = require('./weblogHelp');
 const SendProxy = require('./WebTool/SendProxy');
 let token = '';
-function loadToken(){
-    let myName = 'vscodePluginDemo';//插件名
-    let configs = vscode.workspace.getConfiguration()[myName];
-    SendProxy.Send({
-        Url: configs['autoUrl'] + '/api/App/CheckLogin4App',
-        Method: 'GET',
-        Query: `?credential=${configs['autoUserNo']}&password=${configs['autoPWD']}`,
-    }, (data) => {
-        data = JSON.parse(data)
-        token = data.data.token
-    });
-};
-loadToken();
+util.Web.loadToken((_token) => {
+    token = _token
+});
+
+
 module.exports = function(context) {
     context.subscriptions.push(vscode.commands.registerCommand('extension.demo.testMenuShow', () => {
         util.showInfo(`你点我干啥，我长得很帅吗？`);
@@ -34,90 +26,47 @@ module.exports = function(context) {
     context.subscriptions.push(vscode.commands.registerTextEditorCommand('extension.showLastWebLog', (textEditor, edit) => {
         let url = '/api/'
         //可以缓存这个路径不是一个控制器 更新时间
-        //判断api控制器
-        let _lineIdx = 0, isFind = false
-        while (_lineIdx < textEditor.document.lineCount && !isFind) {
-            let _match = textEditor.document.lineAt(_lineIdx).text.match(/^\s+public\s+class\s+(\w+?)Controller/)
-            if (_match){
-                isFind = true
-                url += _match[1] + '/'
-                break
+        let isController = false;
+        (() => {
+            let _lineIdx = 0
+            while (_lineIdx < textEditor.document.lineCount && !isController) {
+                let _match = textEditor.document.lineAt(_lineIdx).text.match(/^\s+public\s+class\s+(\w+?)Controller/)
+                if (_match){
+                    isController = true
+                    url += _match[1] + '/'
+                    break
+                }
+                _lineIdx+=1
             }
-            _lineIdx+=1
-        }
-        if (!isFind){
+        })();//判断api控制器
+        if (!isController && false){
             util.showInfo(`当前不在api控制器内！`);
             return
         }
-        const selStr = textEditor.document.getText(textEditor.selection)
+        const selStr = textEditor.document.getText(textEditor.selection);
         const lineText = textEditor.document.lineAt(textEditor.selection.start.line).text
-        let charts = []
-        let leftIdx = textEditor.selection.start.character
-        let rightIdx = leftIdx
-        const getChar = (idx) => 
-            idx < lineText.length && idx >= 0? lineText[idx]: '';
-        const isEnd = (_char) => [' ', '('].indexOf(_char) !== -1;
-        const isError = (_char) => ['', '.', '<', '>', ')'].indexOf(_char) !== -1;
-        while (leftIdx != -1 || rightIdx != -1) {
-            let _char = ''
-            if (leftIdx != -1){
-                //左边寻找
-                _char = getChar(leftIdx)
-                if(isEnd(_char)) {
-                    charts[leftIdx] = _char
-                    leftIdx = -1//直接终止
-                }
-                else if(isError(_char)) {//不应该出现的字符出现了
-                    charts = []
-                    //util.showInfo(`请选择一个方法名，而不是其他内容`);
-                    break
-                }
-                else {
-                    charts[leftIdx] = _char
-                    leftIdx -= 1
-                }
-            }
-            if (rightIdx != -1){
-                //右边寻找
-                _char = getChar(rightIdx)
-                if(isEnd(_char)) {
-                    charts[rightIdx] = _char
-                    rightIdx = -1//直接终止
-                }
-                else if(isError(_char)) {//不应该出现的字符出现了
-                    //vscode.window.showInformationMessage(`请选择一个方法名，而不是其他内容`);
-                    charts = []
-                    break
-                }
-                else {
-                    charts[rightIdx] = _char
-                    rightIdx += 1
-                }
-            }
-        }
-        let curStr = ''
-        
-        if (charts.filter(c => c).length > 1){
-            curStr = charts.filter(c => c).join('')
+        let curStr = util.String.findNearStr(lineText, textEditor.selection.start.character)
+        if (curStr.length > 1){
             if (curStr[0] != ' ' || curStr[curStr.length - 1] != '('){
-                vscode.window.showInformationMessage(`${curStr}不是一个方法名`);
+                util.showInfo(`${curStr}不是一个方法名`);
                 return
             }
             curStr = curStr.substring(1, curStr.length - 1);
         } else{
-            //^\s+public.+?\s+?(.+?)\(.+?\)
-            util.showBarMessage('向当前行之上寻找方法', 5000)
-            _lineIdx = textEditor.selection.start.line
-            while (_lineIdx >= 0) {
-                let _text = textEditor.document.lineAt(_lineIdx).text
-                let _match = _text.match(/^\s+public.+\s+?(.+?)\((.+?)?\)/)
-                if (!_match) _lineIdx--
-                else{
-                    curStr = _match[1]
-                    util.showBarMessage(`已匹配到方法${curStr}`, 5000)
-                    break
+            util.showBarMessage('向当前行之上寻找方法', 5000);
+            (() =>{
+                let _lineIdx = textEditor.selection.start.line
+                while (_lineIdx >= 0) {
+                    let _text = textEditor.document.lineAt(_lineIdx).text
+                    let _match = _text.match(/^\s+public.+\s+?(.+?)\((.+?)?\)/)
+                    if (!_match) _lineIdx--
+                    else{
+                        curStr = _match[1]
+                        util.showBarMessage(`已匹配到方法${curStr}`, 5000)
+                        break
+                    }
                 }
-            }
+            })();//匹配方法名
         }
         if (!curStr) return
         url += curStr
@@ -187,5 +136,38 @@ module.exports = function(context) {
                 
             }
         });
+    }));
+    
+    // 编辑器命令 
+    context.subscriptions.push(vscode.commands.registerTextEditorCommand('extension.apiControllerJump', (textEditor, edit) => {
+        const lineText = textEditor.document.lineAt(textEditor.selection.start.line).text
+        //语言判断
+        let curLanguageId = edit['_document'].languageId.toLowerCase();
+        if (['aspnetcorerazor', 'javascript'].indexOf(curLanguageId) == -1){
+            util.showInfo(`当前是${curLanguageId}语言调用的apiControllerJump`);
+        }
+        let curStr = util.String.findNearStr(lineText, textEditor.selection.start.character, ['"', '"'], false);
+        let match = '\\/api\\/(.+?)\\/(.+?)';
+        if (curStr.length > 1){
+            let _match = curStr.match(eval(`/^${match}$/`));
+            if (_match) {
+                util.showBarMessage(`已匹配到api字符串${curStr}`, 5000)
+            }else{
+                _match = lineText.match(eval(`/[\'\"](${match})[\'\"]/`))
+                if (_match) {
+                    curStr = _match[1];
+                }else{
+                    util.showInfo(`当前行没有格式为 "/api/xxx/xx" 的字符串`);
+                    return;
+                }
+            }
+        }
+        let _match = curStr.match(eval(`/^${match}$/`));
+        if (!_match || _match.length < 3) {
+            util.showInfo(`当前行没有格式为 "/api/xxx/xx" 的字符串`);
+            return;
+        }
+        let controllerName = _match[1], funcName = _match[2];
+        util.Jump.ApiController(controllerName, funcName);
     }));
 };
