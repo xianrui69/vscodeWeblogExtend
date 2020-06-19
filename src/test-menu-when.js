@@ -10,11 +10,12 @@ const vscode = require('vscode');
 const util = require('./util');
 const weblogHelp = require('./weblogHelp');
 const SendProxy = require('./WebTool/SendProxy');
+
 let token = '';
 util.Web.loadToken((_token) => {
     token = _token
 });
-
+vscode.version
 
 module.exports = function(context) {
     context.subscriptions.push(vscode.commands.registerCommand('extension.demo.testMenuShow', () => {

@@ -10,8 +10,8 @@ const vscode = require('vscode');
 const weblogHelp = require('../src/weblogHelp');
 const util = require('../src/util');
 const SendProxy = require('../src/WebTool/SendProxy');
-// var c = require('vue')
-// var vj = require('vue-json-viewer')
+
+
 
 const code_dir = __dirname + '\\';//代码路径
 const path = code_dir + 'WebTool\\lastRequests.json';
