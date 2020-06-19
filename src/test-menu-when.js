@@ -146,7 +146,7 @@ module.exports = function(context) {
         if (['aspnetcorerazor', 'javascript'].indexOf(curLanguageId) == -1){
             util.showInfo(`当前是${curLanguageId}语言调用的apiControllerJump`);
         }
-        let curStr = util.String.findNearStr(lineText, textEditor.selection.start.character, ['"', '"'], false);
+        let curStr = util.String.findNearStr(lineText, textEditor.selection.start.character, ['"', "'"], false);
         let match = '\\/api\\/(.+?)\\/(.+?)';
         if (curStr.length > 1){
             let _match = curStr.match(eval(`/^${match}$/`));

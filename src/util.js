@@ -1,4 +1,5 @@
 const fs = require('fs');
+const readline = require('readline');
 const os = require('os');
 const path = require('path');
 const vscode = require('vscode');
@@ -182,16 +183,30 @@ const util = {
                 if (findFiels.length > 0)
                     fn = findFiels[0].fullName;
             }
-            const options = {
-                // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
-                preview: false,
-                viewColumn: vscode.ViewColumn.Active,//显示在旁边第二组
-            };
-            let activeTextEditor = vscode.window.showTextDocument(vscode.Uri.file(fn), options);
-            activeTextEditor.then((textEditor) => {
-                textEditor.selection.with({start: new vscode.Position(1,2)});
-                //new vscode.Location(vscode.Uri.file(fn), new vscode.Position(0, 0))
-                //debugger
+            let readStream = fs.createReadStream(fn);
+            var objReadline = readline.createInterface({
+                input: readStream
+            });
+            //找到位置 找到了就弹窗
+            let selection;
+            let lineNum = 0;
+            objReadline.on('line', function(line){
+                let _match = line.match(/^(\s+public.+\s+?)(.+?)\((.+?)?\)/);
+                if (_match && _match[2] == funcName) {
+                    let _left = _match[1].length, _right = _match[1].length + _match[2].length;
+                    let _str = line.substring(_left, _right);
+                    selection = new vscode.Range(new vscode.Position(lineNum, _left), new vscode.Position(lineNum, _right));
+                    this.close();//立即触发事件
+                    readStream.destroy();//流关闭
+                    const options = {
+                        selection: selection,
+                        // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
+                        preview: false,
+                        viewColumn: vscode.ViewColumn.Active,//显示在旁边第二组
+                    };
+                    vscode.window.showTextDocument(vscode.Uri.file(fn), options);
+                }
+                lineNum++;
             });
         }
     },
