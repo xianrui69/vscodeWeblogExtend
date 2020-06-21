@@ -21,7 +21,7 @@ const messageHandler = {
      * @param {*} message 
      * @param {*} resp 
      */
-    data: {},
+    data: null,
     invokeCallback(panel, message, resp) {
         console.log('回调消息：', resp);
         // 错误码在400-600之间的，默认弹出错误提示
@@ -72,7 +72,15 @@ module.exports = function(context) {
         }
         let _arguments = arguments;
         if (_arguments.length > 0)//发消息给页面
-            panel.webview.postMessage(_arguments);
+            {
+                if (false && messageHandler.data == null){
+                    messageHandler.data = messageHandler.data || {};
+                    messageHandler.data[_arguments[0]['title']] = _arguments[0]['data'] || {};
+                }
+                setTimeout(() => {
+                    panel.webview.postMessage(_arguments);
+                }, 300);
+            }
     }));
     
     // 编辑器命令 

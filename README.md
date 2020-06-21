@@ -1,5 +1,10 @@
+# 更新计划
+
+* [更新计划](http://note.youdao.com/noteshare?id=d91e6e25d9aa05040e1b51d11b369cc9&sub=64F6CE2052284754BDF9BF866EFBDE9A)
+
 # vscode-plugin-demo
 
+开发锦囊
 VSCode插件开发全攻略系列文章配套demo。
 
 # 文章索引
