@@ -73,13 +73,8 @@ module.exports = function(context) {
         let _arguments = arguments;
         if (_arguments.length > 0)//发消息给页面
             {
-                if (messageHandler.data == null){
-                    messageHandler.data = messageHandler.data || {};
-                    messageHandler.data[_arguments[0]['title']] = _arguments[0]['data'] || {};
-                }
-                // setTimeout(() => {
-                //     panel.webview.postMessage(_arguments);
-                // }, 300);
+                messageHandler.data = messageHandler.data || {};
+                messageHandler.data[_arguments[0]['title']] = _arguments[0]['data'] || {};
             }
     }));
     
