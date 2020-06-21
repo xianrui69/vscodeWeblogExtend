@@ -11,8 +11,6 @@ const weblogHelp = require('../src/weblogHelp');
 const util = require('../src/util');
 const SendProxy = require('../src/WebTool/SendProxy');
 
-
-
 const code_dir = __dirname + '\\';//代码路径
 const path = code_dir + 'WebTool\\lastRequests.json';
 const options = {
