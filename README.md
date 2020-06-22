@@ -1,6 +1,7 @@
 # vscode-plugin-demo
 
 VSCode插件开发全攻略系列文章配套demo。
+-分支，只是在这个教程的库的基础上做了修改
 
 # 文章索引
 
