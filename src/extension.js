@@ -7,28 +7,11 @@
  * @FilePath: \vscode-plugin-demo-master\src\extension.js
  */ 
 const vscode = require('vscode');
-const weblogHelp = require('../src/weblogHelp');
-const util = require('../src/util');
-const SendProxy = require('../src/WebTool/SendProxy');
 
-const code_dir = __dirname + '\\';//代码路径
-const path = code_dir + 'WebTool\\lastRequests.json';
-const options = {
-	// 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
-	preview: false,
-	viewColumn: vscode.ViewColumn.Beside,//显示在旁边第二组
-};
-
-//vscode.window.showTextDocument(vscode.Uri.file(path), options);
-
-
-
+// const weblogHelp = require('../src/weblogHelp');
 // weblogHelp.search({}, (err,data)=>{
 //     data=data
-//     // SendProxy.ReSendByRow(data.rows.filter(r => r.Headers)[0], (str) =>{
-//     //     debugger
-//     //     util.showInfo(str)
-//     // })
+//     debugger
 // });
 /**
  * 插件被激活时触发，所有代码总入口
@@ -42,7 +25,7 @@ exports.activate = function(context) {
     require('./test-menu-when')(context); // 测试菜单when命令
     // require('./jump-to-definition')(context); // 跳转到定义
     // require('./completion')(context); // 自动补全
-    // require('./hover')(context); // 悬停提示
+    require('./hover')(context); // 悬停提示
     // require('./WebJS/webview')(context); // Webview
     require('./WebJS/welcome')(context); // 欢迎提示
     require('./WebJS/showJson')(context); // 显示json的界面

@@ -59,6 +59,20 @@ const util = {
             });
         },
     },
+    Document:{
+        //判断api控制器
+        isController(document){
+            let _lineIdx = 0
+            while (_lineIdx < document.lineCount) {
+                let _match = document.lineAt(_lineIdx).text.match(/^\s+public\s+class\s+(\w+?)Controller/)
+                if (_match){
+                    return _match[1]
+                }
+                _lineIdx+=1
+            }
+            return '';
+        },
+    },
     String:{
         /**
          * 在源字符串的索引 最近的位置 寻找一段字符串，遇到结尾endCharts元素就结束，遇到errorCharts就直接异常返回空字符串

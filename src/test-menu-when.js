@@ -27,20 +27,11 @@ module.exports = function(context) {
     context.subscriptions.push(vscode.commands.registerTextEditorCommand('extension.showLastWebLog', (textEditor, edit) => {
         let url = '/api/'
         //可以缓存这个路径不是一个控制器 更新时间
-        let isController = false;
-        (() => {
-            let _lineIdx = 0
-            while (_lineIdx < textEditor.document.lineCount && !isController) {
-                let _match = textEditor.document.lineAt(_lineIdx).text.match(/^\s+public\s+class\s+(\w+?)Controller/)
-                if (_match){
-                    isController = true
-                    url += _match[1] + '/'
-                    break
-                }
-                _lineIdx+=1
-            }
-        })();//判断api控制器
-        if (!isController && false){
+        let ControllerName = util.Document.isController(textEditor.document);
+        if (ControllerName){
+            url += ControllerName + '/';
+        }
+        if (!ControllerName){
             util.showInfo(`当前不在api控制器内！`);
             return
         }

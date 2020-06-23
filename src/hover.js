@@ -1,40 +1,43 @@
 const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
-
-/**
- * 鼠标悬停提示，当鼠标停在package.json的dependencies或者devDependencies时，
- * 自动显示对应包的名称、版本号和许可协议
- * @param {*} document 
- * @param {*} position 
- * @param {*} token 
- */
-function provideHover(document, position, token) {
-    const fileName    = document.fileName;
-    const workDir     = path.dirname(fileName);
-    const word        = document.getText(document.getWordRangeAtPosition(position));
-
-    if (/\/package\.json$/.test(fileName) || /\\package\.json$/.test(fileName)) {
-        console.log('进入provideHover方法');
-        const json = document.getText();
-        let reg2 = new RegExp(`"(dependencies|devDependencies)":\\s*?\\{[\\s\\S]*?${word.replace(/\//g, '\\/')}[\\s\\S]*?\\}`, 'gm');
-        let testResult = reg2.test(json);
-        if (testResult) {
-            //return new vscode.Hover(`* **名称**：`);
-            let destPath = `${workDir}/node_modules/${word.replace(/"/g, '')}/package.json`;
-            if (fs.existsSync(destPath)) {
-                const content = require(destPath);
-                console.log('hover已生效');
-                // hover内容支持markdown语法
-                return new vscode.Hover(`* **名称**：${content.name}\n* **版本**：${content.version}\n* **许可协议**：${content.license}`);
-            }
-        }
-    }
-}
+const util = require('./util');
 
 module.exports = function(context) {
-    // 注册鼠标悬停提示
-    context.subscriptions.push(vscode.languages.registerHoverProvider('json', {
-        provideHover
-    }));
+    let b = {
+        /**
+         * 鼠标悬停提示，当鼠标停在package.json的dependencies或者devDependencies时，
+         * 自动显示对应包的名称、版本号和许可协议
+         * @param {*} document 
+         * @param {*} position 
+         * @param {*} token 
+         */
+        provideHover(document, position, token) {
+            return new Promise(resolve => {
+                const fileName    = document.fileName;
+                const workDir     = path.dirname(fileName);
+                const word        = document.getText(document.getWordRangeAtPosition(position));
+
+                let url = '/api/'
+                //可以缓存这个路径不是一个控制器 更新时间
+                let ControllerName = util.Document.isController(document);
+                if (ControllerName){
+                    url += ControllerName + '/';
+                } else return;
+                let _text = document.lineAt(position.line).text
+                let _match = _text.match(/^\s+public.+\s+?(.+?)\((.+?)?\)/)
+                if (!_match) {
+                    return;
+                }
+                else{
+                    url += _match[1]
+                }
+                setTimeout(() => {
+                    resolve(new vscode.Hover(`* **名称**：${url}\n* **版本**：${1}\n* **许可协议**：${1}`));
+                }, 100);//模拟一下异步
+            });
+        }
+    };
+    // 注册鼠标悬停提示 C#
+    context.subscriptions.push(vscode.languages.registerHoverProvider({ scheme: 'file', language: 'csharp' }, b));
 };
