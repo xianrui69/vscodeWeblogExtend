@@ -1,7 +1,7 @@
 <!--
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-06-12 10:02:41
+ * @LastEditTime: 2020-06-23 17:48:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\view\custom-welcome.html
@@ -78,13 +78,18 @@
 </head>
 
 <body>
-    <button @click="clear">清除所有页面内容</button>
     <div id="app" class="container-fluid">
-        <div v-for="(value, title) in datas">
+        <button @click="clear">清除所有页面内容</button>
+        <button @click="desc=!desc">
+            时间
+            <span v-if="desc">降序</span>
+            <span v-if="!desc">升序</span>
+        </button>
+        <div v-for="data in Object.keys(datas).map(_key => { return {time : new Date(datas[_key]['__time']), key: _key}}).sort((a,b) => (desc?b['time']-a['time']:a['time']-b['time']))">
             <hr/>
-            <h1>{{ title }}</h1>
+            <h1>{{ data.key }}</h1>
             <hr/>
-            <json-view :data="value" :deep="deep"/>
+            <json-view :data="datas[data.key]" :deep="deep"/>
         </div>
     </div>
     <script src="../../../lib/jquery/jquery.min.js"></script>

@@ -17,15 +17,11 @@ const _this = {
      * 初始化 判断是否存在weblog.db文件
      */
     init() {
-        if (vscode.workspace.workspaceFolders.length > 0){
-            let workPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-            //找到了 "i:\\code\\华丽\\src"
-            if (workPath.length - 3 == workPath.indexOf('src') || fs.existsSync(workPath = (workPath + '\\src'))){
-                //寻找\Enterprise.Web\weblog.db
-                if(fs.existsSync(workPath = (workPath + '\\Enterprise.Web\\weblog.db'))){
-                    this.sqliteHelp = sqliteHelp(workPath)
-                    util.showBarMessage('检测到拥有weblog.db，已激活weblog功能', 5000)
-                }
+        let workPath = util.Path.getWebPath();
+        if (workPath){
+            if(fs.existsSync(workPath = (workPath + '\\weblog.db'))){
+                this.sqliteHelp = sqliteHelp(workPath)
+                util.showBarMessage('检测到拥有weblog.db，已激活weblog功能', 5000)
             }
         }
     },

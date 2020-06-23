@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:15
- * @LastEditTime: 2020-06-23 17:00:14
+ * @LastEditTime: 2020-06-23 17:25:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\welcome.js
@@ -21,7 +21,7 @@ const messageHandler = {
      * @param {*} message 
      * @param {*} resp 
      */
-    data: {},
+    data: null,
     invokeCallback(panel, message, resp) {
         console.log('回调消息：', resp);
         // 错误码在400-600之间的，默认弹出错误提示
@@ -74,10 +74,12 @@ module.exports = function(context) {
             })
         }
         let _arguments = arguments;
-        if (_arguments.length > 0)//发消息给页面
+        if (_arguments.length > 0 && _arguments[0]['data'] && _arguments[0]['title'])//发消息给页面
             {
+                _arguments[0]['data']['__time'] = new Date();
                 messageHandler.data = messageHandler.data || {};
                 messageHandler.data[_arguments[0]['title']] = _arguments[0]['data'] || {};
+                panel.webview.postMessage([{'action': 'refresh'}]);
             }
     }));
     

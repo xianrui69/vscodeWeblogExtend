@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-06-23 16:26:04
+ * @LastEditTime: 2020-06-23 17:29:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\view\custom-welcome.js
@@ -10,6 +10,7 @@ let _vue = new Vue({
     el: '#app',
     data: {
         deep: 1,
+        desc: true,
         datas:{
         }
     },
@@ -50,6 +51,15 @@ let _vue = new Vue({
                 this.$delete(this['datas'], title);
             }
             callVscode({cmd: 'dataChange', data: this['datas']}, null);
+        },
+        refresh(){
+            callVscode({cmd: 'getData'}, (datas) =>{
+                for (const key in datas) {
+                    if (datas.hasOwnProperty(key)) {
+                        this.$set(this['datas'], key, datas[key]);
+                    }
+                }
+            });
         }
     }
 });
@@ -58,7 +68,7 @@ window.messageListener = function(message) {
         switch (message['action']) {
             case 'push':
                 if(typeof(message['data']) == 'object'){
-                    _vue.push(message['title'] || '新的json', message['data']);
+                    _vue.push(message['title'] || '??json', message['data']);
                 }
                 break;
             case 'delete':
@@ -66,9 +76,11 @@ window.messageListener = function(message) {
                     message['title'] && _vue.delete(message['title']);
                 }
                 break;
+            case 'refresh':
+                _vue.refresh();
+                break;
             default:
                 break;
         }
     }
 }
-console.log(new Date());

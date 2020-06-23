@@ -1,9 +1,16 @@
 const fs = require('fs');
+const readline = require('readline');
 const os = require('os');
 const path = require('path');
 const vscode = require('vscode');
 const exec = require('child_process').exec;
-
+const SendProxy = require('./WebTool/SendProxy');
+const utilConsts = {
+    String:{
+        endCharts: [' ', '('],
+        errorCharts: ['', '.', '<', '>', ')'],
+    }
+}
 const util = {
     Web:{
         /**
@@ -34,6 +41,188 @@ const util = {
                 title: jsonTitle,
             });
         },
+        /**
+         * 根据配置 调用登录 获取json 调用回调函数
+         * @param {*} callBack 回调函数
+         */
+        loadToken(callBack){
+            let myName = 'vscodePluginDemo';//插件名
+            let configs = vscode.workspace.getConfiguration()[myName];
+            SendProxy.Send({
+                Url: configs['autoUrl'] + '/api/App/CheckLogin4App',
+                Method: 'GET',
+                Query: `?credential=${configs['autoUserNo']}&password=${configs['autoPWD']}`,
+            }, (data) => {
+                data = JSON.parse(data)
+                let token = data.data.token
+                typeof(callBack) === 'function' && callBack(token);
+            });
+        },
+    },
+    String:{
+        /**
+         * 在源字符串的索引 最近的位置 寻找一段字符串，遇到结尾endCharts元素就结束，遇到errorCharts就直接异常返回空字符串
+         * @param {*} sourceStr  源字符串
+         * @param {*} startIdx  最近的位置
+         * @param {*} endCharts  遇到结尾endCharts元素就结束
+         * @param {*} isHasEnd  遇到结尾时 是否包含结尾
+         * @param {*} errorCharts  遇到errorCharts就直接异常返回空字符串
+         */
+        findNearStr(sourceStr, startIdx, endCharts = utilConsts.String.endCharts, isHasEnd = true, errorCharts = utilConsts.String.errorCharts){
+            const lineText = sourceStr
+            let charts = []
+            let leftIdx = startIdx
+            let rightIdx = leftIdx
+            const getChar = (idx) => 
+                idx < lineText.length && idx >= 0? lineText[idx]: '';
+            if (!Array.isArray(endCharts) || !Array.isArray(errorCharts)) return ''
+            const isEnd = (_char) => endCharts.indexOf(_char) !== -1;
+            const isError = (_char) => errorCharts.indexOf(_char) !== -1;
+            while (leftIdx != -1 || rightIdx != -1) {
+                let _char = ''
+                if (leftIdx != -1){
+                    //左边寻找
+                    _char = getChar(leftIdx)
+                    if(isEnd(_char)) {
+                        if(isHasEnd)
+                            charts[leftIdx] = _char
+                        leftIdx = -1//直接终止
+                    }
+                    else if(isError(_char)) {//不应该出现的字符出现了
+                        charts = []
+                        //util.showInfo(`请选择一个方法名，而不是其他内容`);
+                        break
+                    }
+                    else {
+                        charts[leftIdx] = _char
+                        leftIdx -= 1
+                    }
+                }
+                if (rightIdx != -1){
+                    //右边寻找
+                    _char = getChar(rightIdx)
+                    if(isEnd(_char)) {
+                        if(isHasEnd)
+                            charts[rightIdx] = _char
+                        rightIdx = -1//直接终止
+                    }
+                    else if(isError(_char)) {//不应该出现的字符出现了
+                        //vscode.window.showInformationMessage(`请选择一个方法名，而不是其他内容`);
+                        charts = []
+                        break
+                    }
+                    else {
+                        charts[rightIdx] = _char
+                        rightIdx += 1
+                    }
+                }
+            }
+            charts = charts.filter(c => c);
+            return charts.length > 1? charts.join(''): '';
+        }
+    },
+    File:{
+        ApiControllers:{
+            basePath:'',
+            files:[],
+        },
+        findFile(dir, fn, result) {
+            if (!this.ApiControllers.basePath)
+                this.ApiControllers.basePath = util.Path.getWebPath() + "\\Controllers\\ApiControllers";
+            let basePath = this.ApiControllers.basePath;
+            const files = fs.readdirSync(dir);
+            files.forEach((item, index) => {
+                var fullPath = path.join(dir, item);
+                const stat = fs.statSync(fullPath);
+                if (stat.isDirectory()) {
+                    let _result = util.File.findFile(path.join(dir, item), fn, result);  //递归读取文件
+                    if (_result) result = _result;
+                } else if (stat.isFile()){ 
+                    if (item == fn) {
+                        result = path.join(dir, item);
+                    }
+                    let pns = dir.replace(basePath + '\\', '').split('\\');
+                    let obj = util.File.ApiControllers;
+                    pns.forEach((p, idx) =>{
+                        if(!obj[p]) obj[p] = {};
+                        if (idx + 1 == pns.length && !obj[p]['files']) {
+                            obj[p]['files'] = []
+                        }
+                        obj = obj[p]
+                    });
+                    let _file = {name:item,fullName:path.join(dir, item)};
+                    obj['files'].push(_file);
+                    util.File.ApiControllers.files.push(_file);
+                }        
+            });
+            return result;
+        },
+        readFileList(dir, filesList = []) {
+            const files = fs.readdirSync(dir);
+            files.forEach((item, index) => {
+                var fullPath = path.join(dir, item);
+                const stat = fs.statSync(fullPath);
+                if (stat.isDirectory()) {      
+                    util.File.readFileList(path.join(dir, item), filesList);  //递归读取文件
+                } else {                
+                    filesList.push(fullPath);                     
+                }        
+            });
+            return filesList;
+        },
+    },
+    Jump:{//跳转文件等等
+        ApiController(controllerName, funcName){
+            let fn = '', controllerFileName = `${controllerName}Controller.cs`;
+            if (util.File.ApiControllers.files.length < 1){
+                let path = util.Path.getWebPath() + "\\Controllers\\ApiControllers";
+                fn = util.File.findFile(path, controllerFileName);
+            }
+            else {
+                let findFiels = util.File.ApiControllers.files.filter(f => f.name == controllerFileName);
+                if (findFiels.length > 0)
+                    fn = findFiels[0].fullName;
+            }
+            let readStream = fs.createReadStream(fn);
+            var objReadline = readline.createInterface({
+                input: readStream
+            });
+            //找到位置 找到了就弹窗
+            let selection;
+            let lineNum = 0;
+            objReadline.on('line', function(line){
+                let _match = line.match(/^(\s+public.+\s+?)(.+?)\((.+?)?\)/);
+                if (_match && _match[2] == funcName) {
+                    let _left = _match[1].length, _right = _match[1].length + _match[2].length;
+                    let _str = line.substring(_left, _right);
+                    selection = new vscode.Range(new vscode.Position(lineNum, _left), new vscode.Position(lineNum, _right));
+                    this.close();//立即触发事件
+                    readStream.destroy();//流关闭
+                    const options = {
+                        selection: selection,
+                        // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
+                        preview: false,
+                        viewColumn: vscode.ViewColumn.Active,//显示在旁边第二组
+                    };
+                    vscode.window.showTextDocument(vscode.Uri.file(fn), options);
+                }
+                lineNum++;
+            });
+        }
+    },
+    Path:{
+        WebPath: '',
+        getWebPath(){
+            if (this.WebPath) return this.WebPath;
+            if (vscode.workspace.workspaceFolders.length > 0){
+                let workPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+                //找到了 "i:\\code\\华丽\\src"
+                if (workPath.length - 3 == workPath.indexOf('src') || fs.existsSync(workPath = (workPath + '\\src'))){
+                    return this.WebPath = workPath + '\\Enterprise.Web';
+                }
+            }
+            return '';
+        }
     },
     /**
      * 获取当前所在工程根目录，有3种使用方法：<br>

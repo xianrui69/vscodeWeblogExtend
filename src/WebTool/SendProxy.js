@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-10 10:37:51
- * @LastEditTime: 2020-06-12 11:01:06
+ * @LastEditTime: 2020-06-23 17:24:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\webTool\sds.js
@@ -14,6 +14,31 @@ const util = require('../util');
 const fs = require('fs');
 const UUID = require('uuid');
 const encoding = 'utf-8';//默认命令行的编码格式应该是
+const pythonHelper = {
+    pythonVersionFile:{
+        '2': 'Request_PY2.py',
+        '3': 'Request.py',
+    },
+    pythonVersion: '',
+    init(){
+        exec(`python -V`, (error,stdout,stderr)=>{
+            if(stderr.length >1||stdout.length>1){//返回值
+                pythonHelper.pythonVersion = (stderr||stdout).split(' ')[1].split('.')[0];
+            }else if(error){
+                console.log('错误堆栈 : '+error)
+            } else {
+                console.log('没有输出');
+            }
+        });
+    },
+    getPythonFileName(){
+        if (this.pythonVersionFile.hasOwnProperty(this.pythonVersion)){
+            return this.pythonVersionFile[this.pythonVersion]
+        }
+        return ''//默认使用版本3
+    }
+}
+pythonHelper.init();
 module.exports = {
     /**
      * 返回一个url之类格式的东东
@@ -30,6 +55,14 @@ module.exports = {
         }
         return arg1
     },
+    PythonFileName: null,
+    getPythonFileName(callBack){
+        let val = pythonHelper.getPythonFileName()
+        if (!val)
+            return setTimeout(() => this.getPythonFileName(callBack), 100);
+        this.PythonFileName = val;
+        callBack(val);
+    },
     /**
      * 重发一个请求 根据一行
      * @param {*} row sqlite里的一行数据
@@ -40,6 +73,10 @@ module.exports = {
             util.showError('ReSendByRow调用必须传递 callback 函数类型')
             return;
         }
+        if (!this.PythonFileName) return this.getPythonFileName(() => {
+            this.ReSendByRow(row, callBack);
+        });
+        let pythonFileName = this.PythonFileName;
         let _data = this.getData(row)
         let jsonStr = JSON.stringify(_data);
         let fn = code_dir + 'lastRequests.json'
@@ -53,8 +90,8 @@ module.exports = {
                 util.showError('写文件错误')//异常抛出
                 return console.error(err);
             }
-            let cmdStr = `python ${code_dir}Request.py ${fn}`
-            exec(`python Request.py ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
+            let cmdStr = `python ${code_dir}${pythonFileName} ${fn}`
+            exec(`python ${pythonFileName} ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
                 setTimeout(() => {
                     fs.unlinkSync(fn);//删除请求的文件记录
                 }, 20)
@@ -79,6 +116,10 @@ module.exports = {
             util.showError('ReSendByRow调用必须传递 callback 函数类型')
             return;
         }
+        if (!this.PythonFileName) return this.getPythonFileName(() => {
+            this.Send(data, callBack);
+        });
+        let pythonFileName = this.PythonFileName;
         let jsonStr = JSON.stringify(data);
         let fn = code_dir + 'send_' + UUID.v1() + '.json'//产生唯一的文件 方便多文档读写
         fs.writeFile(fn, jsonStr, function(err) { 
@@ -86,8 +127,8 @@ module.exports = {
                 util.showError('写文件错误')//异常抛出
                 return console.error(err);
             }
-            let cmdStr = `python ${code_dir}Request.py ${fn}`
-            exec(`python Request.py ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
+            let cmdStr = `python ${code_dir}${pythonFileName} ${fn}`
+            exec(`python ${pythonFileName} ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
                 setTimeout(() => {
                     fs.unlinkSync(fn);//删除请求的文件记录
                 }, 120)
