@@ -1,12 +1,11 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-06-12 10:02:28
+ * @LastEditTime: 2020-06-23 16:26:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\view\custom-welcome.js
  */ 
-
 let _vue = new Vue({
     el: '#app',
     data: {
@@ -72,3 +71,4 @@ window.messageListener = function(message) {
         }
     }
 }
+console.log(new Date());

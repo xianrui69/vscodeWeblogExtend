@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:15
- * @LastEditTime: 2020-06-12 10:43:56
+ * @LastEditTime: 2020-06-23 17:00:14
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\welcome.js
@@ -34,7 +34,9 @@ const messageHandler = {
         util.showInfo(message.msg);
     },
     dataChange(global, message) {
-        if (message['data']) this.data = message['data']
+        if (message['data']) {
+            this.data = message['data']
+        }
     },
     getData(global, message) {
         this.invokeCallback(global.panel, message, this.data);
@@ -48,6 +50,7 @@ module.exports = function(context) {
             vscode.ViewColumn.One, // 显示在编辑器的哪个部位
             {
                 enableScripts: true, // 启用JS，默认禁用
+                retainContextWhenHidden: true,// webview被隐藏时保持状态，避免被重置
             }
         );
         let global = { panel};
@@ -72,7 +75,10 @@ module.exports = function(context) {
         }
         let _arguments = arguments;
         if (_arguments.length > 0)//发消息给页面
-            panel.webview.postMessage(_arguments);
+            {
+                messageHandler.data = messageHandler.data || {};
+                messageHandler.data[_arguments[0]['title']] = _arguments[0]['data'] || {};
+            }
     }));
     
     // 编辑器命令 
