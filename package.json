@@ -60,10 +60,6 @@
             }
         },
         "commands": [
-            // {
-            //     "command": "extension.sayHello",
-            //     "title": "Hello，小茗同学"
-            // },
             {
                 "command": "extension.showLastWebLog",
                 "title": "显示最近调用"
@@ -72,22 +68,6 @@
                 "command": "extension.apiControllerJump",
                 "title": "跳转到api控制器"
             },
-            // {
-            //     "command": "extension.demo.getCurrentFilePath",
-            //     "title": "获取当前文件(夹)路径"
-            // },
-            // {
-            //     "command": "extension.demo.testMenuShow",
-            //     "title": "这个菜单仅在JS文件中出现",
-            //     "icon": {
-            //         "light": "./images/tool-light.svg",
-            //         "dark": "./images/tool-light.svg"
-            //     }
-            // },
-            // {
-            //     "command": "extension.demo.openWebview",
-            //     "title": "打开WebView"
-            // },
             {
                 "command": "extension.demo.showWelcome",
                 "title": "显示自定义欢迎页"
@@ -96,20 +76,6 @@
                 "command": "extension.demo.showJson",
                 "title": "JSON展示"
             }
-        ],
-        "keybindings": [
-            // {
-            //     "command": "extension.sayHello",
-            //     "key": "ctrl+f10",
-            //     "mac": "cmd+f10",
-            //     "when": "editorTextFocus"
-            // },
-            // {
-            //     "command": "extension.demo.openWebview",
-            //     "key": "ctrl+f9",
-            //     "mac": "cmd+f9",
-            //     "when": "editorTextFocus"
-            // }
         ],
         "menus": {
             "editor/context": [
@@ -122,55 +88,14 @@
                     "when": "resourceLangId == csharp",
                     "command": "extension.showLastWebLog",
                     "group": "navigation@7"
-                },
-                // {
-                //     "when": "editorFocus",
-                //     "command": "extension.sayHello",
-                //     "group": "navigation@6"
-                // },
-                // {
-                //     "when": "editorFocus",
-                //     "command": "extension.demo.getCurrentFilePath",
-                //     "group": "navigation@5"
-                // },
-                // {
-                //     "when": "editorFocus && resourceLangId == javascript",
-                //     "command": "extension.demo.testMenuShow",
-                //     "group": "z_commands"
-                // },
-                // {
-                //     "command": "extension.demo.openWebview",
-                //     "group": "navigation"
-                // }
+                }
             ],
             "editor/title": [
                 {
                     "when": "resourceLangId == csharp",
                     "command": "extension.showLastWebLog",
                     "group": "navigation@0"
-                },
-                // {
-                //     "when": "editorFocus && resourceLangId == javascript",
-                //     "command": "extension.demo.testMenuShow",
-                //     "group": "navigation"
-                // }
-            ],
-            "editor/title/context": [
-                // {
-                //     "when": "resourceLangId == javascript",
-                //     "command": "extension.demo.testMenuShow",
-                //     "group": "navigation"
-                // }
-            ],
-            "explorer/context": [
-                // {
-                //     "command": "extension.demo.getCurrentFilePath",
-                //     "group": "navigation"
-                // },
-                // {
-                //     "command": "extension.demo.openWebview",
-                //     "group": "navigation"
-                // }
+                }
             ]
         },
         "snippets": [
@@ -207,7 +132,7 @@
                     "id": "beautifulGirl3",
                     "name": "人妖"
                 }
-            ],
+            ]
         },
         "iconThemes": [
             {
