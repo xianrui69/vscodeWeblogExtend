@@ -59,8 +59,102 @@ const util = {
             });
         },
     },
+    Cache:{
+        Controllers:{//使用这些索引器来访问缓存 使得save等等可以触发
+            Set(name, Controller){
+                this[name] = Controller;
+            },
+            Get(name){
+                return this[name];
+            },
+            SetFuncCall(cName, fName){//钩子
+                let c = this.Get(cName);
+                if (!c) return;
+            },
+            GetFunc(){
+
+            }
+        },
+        DBMode:'none',//redis sqlite 这些都没写
+        save(){},
+        load(){},
+        init(){
+            if (this.DBMode === 'none') return;//不需要加载
+            //初次使用时等等
+        },
+    },
+    Controller: function (name, fileName = ''){
+        let curController = util.Cache.Controllers.Get(name);
+        if (!curController) curController = this;
+        else return curController;//缓存的
+        this.errorMsg = '';
+        this.type = 'Controller';
+        this.name = name;
+        this.baseName = `${name}Controller.cs`;
+        let setCache = (name, fn) => '';
+        if (!fileName) {
+            let findFiels = util.File.ApiControllers.getControllers(this.baseName);
+            if (findFiels.length > 0){
+                fileName = findFiels[0].fullName;
+                findFiels.forEach(e => setCache(name, e.fullName));
+                util.File.ApiControllers.files.filter(f => !util.Cache.Controllers.Get(f.cname))
+                    .forEach(e => {
+                        let c = new util.Controller(e.cname, e.fullName);
+                        util.Cache.Controllers.Set(e.cname, c);
+                    });
+            }
+        }else {
+            if (!fs.existsSync(fileName)) {
+                this.errorMsg = '控制器文件不存在！' + fileName;
+                return this;
+            }
+        }
+        
+        this.fileName = fileName;
+        this.JumpFunc = function(funcName){
+            let _func = curController.getFunc(funcName);
+            let _jump = () =>{
+                util.Jump.ByFileToFunc(fileName, funcName, (selection, selections) =>{
+                    if (!_func){
+                        _func = AddFunc(funcName, selection);
+                    }else _func.selection = selection;
+                    selections.filter(f => !curController.getFunc(f.funcName)).forEach(f =>{//注册并方法
+                        AddFunc(f.funcName, f.selection);
+                    })
+                })
+            };
+            if (_func && _func.selection){
+                util.Window.ShowFile(fileName, _func.selection, textEdit => {
+                    let text = textEdit.document.getText(textEdit.document.getWordRangeAtPosition(_func.selection.start));
+                    if (text == _func.name) return;
+                    else _jump();
+                })
+                return;
+            }
+            return _jump();
+        };
+        this.funcs = {};//获取funcs
+        function Func(controller, funcName, selection) {
+            this.type = 'ControllerFunc';
+            this.name = funcName;
+            this.controller = controller;
+            this.selection = selection;
+            this.jump = () => controller.JumpFunc(funcName);
+        }
+        function AddFunc(funcName, selection = undefined){
+            let _func = curController.funcs[funcName] = new Func(curController, funcName, selection);
+            util.Cache.Controllers.SetFuncCall(curController.name, funcName);//触发钩子
+            return _func;
+        }
+        this.getFunc = (funcName) =>{
+            return curController.funcs[funcName];
+        }
+    },
     Document:{
-        //判断api控制器
+        /**
+         * 判断是否是控制器
+         * @param {*} document vscode的文档对像
+         */
         isController(document){
             let _lineIdx = 0
             while (_lineIdx < document.lineCount) {
@@ -139,6 +233,14 @@ const util = {
         ApiControllers:{
             basePath:'',
             files:[],
+            loadFiles(){
+                let path = util.Path.getWebPath() + "\\Controllers\\ApiControllers";
+                util.File.findFile(path, '');
+            },
+            getControllers(controllerFileBaseName){
+                if (this.files.length == 0) this.loadFiles();
+                return this.files.filter(f => f.name == controllerFileBaseName);
+            },
         },
         findFile(dir, fn, result) {
             if (!this.ApiControllers.basePath)
@@ -164,7 +266,7 @@ const util = {
                         }
                         obj = obj[p]
                     });
-                    let _file = {name:item,fullName:path.join(dir, item)};
+                    let _file = {name:item,cname:item.replace(/Controller.cs$/, ''),fullName:path.join(dir, item)};
                     obj['files'].push(_file);
                     util.File.ApiControllers.files.push(_file);
                 }        
@@ -185,43 +287,55 @@ const util = {
             return filesList;
         },
     },
+    Window:{
+        ShowFile(fileName, selection = undefined, showCall=(textEditor)=>{}){
+            const options = {
+                selection: selection,
+                // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
+                preview: true,
+                viewColumn: vscode.ViewColumn.Active,//显示在旁边第二组
+            };
+            vscode.window.showTextDocument(vscode.Uri.file(fileName), options).then(textEditor => {
+                showCall(textEditor)
+            });
+        }
+    },
     Jump:{//跳转文件等等
-        ApiController(controllerName, funcName){
-            let fn = '', controllerFileName = `${controllerName}Controller.cs`;
-            if (util.File.ApiControllers.files.length < 1){
-                let path = util.Path.getWebPath() + "\\Controllers\\ApiControllers";
-                fn = util.File.findFile(path, controllerFileName);
-            }
-            else {
-                let findFiels = util.File.ApiControllers.files.filter(f => f.name == controllerFileName);
-                if (findFiels.length > 0)
-                    fn = findFiels[0].fullName;
-            }
-            let readStream = fs.createReadStream(fn);
+        ByFileToFunc(fileName, funcName, openCall=(selection, selections)=>{}){
+            let readStream = fs.createReadStream(fileName);
             var objReadline = readline.createInterface({
                 input: readStream
             });
             //找到位置 找到了就弹窗
             let selection;
             let lineNum = 0;
-            objReadline.on('line', function(line){
+            let isOpen = false;
+            let selections = [];
+            //匹配和打开 匹配这个行有方法名 并且方法名等于funcName就打开文档 
+            ///^(\s+public.+\s+?)(.+?)\((.+?)?\)/
+            let match_oepn = (line) =>{
                 let _match = line.match(/^(\s+public.+\s+?)(.+?)\((.+?)?\)/);
-                if (_match && _match[2] == funcName) {
-                    let _left = _match[1].length, _right = _match[1].length + _match[2].length;
-                    let _str = line.substring(_left, _right);
-                    selection = new vscode.Range(new vscode.Position(lineNum, _left), new vscode.Position(lineNum, _right));
-                    this.close();//立即触发事件
+                if (!_match) return lineNum++;
+                let _funcName = _match[2];
+                let _left = _match[1].length, _right = _match[1].length + _match[2].length;
+                selection = new vscode.Range(new vscode.Position(lineNum, _left), new vscode.Position(lineNum, _right));
+                selections.push({funcName:_funcName,selection:selection});
+                if (_funcName == funcName) {
+                    objReadline.close();//立即触发事件
                     readStream.destroy();//流关闭
-                    const options = {
-                        selection: selection,
-                        // 是否预览，默认true，预览的意思是下次再打开文件是否会替换当前文件
-                        preview: false,
-                        viewColumn: vscode.ViewColumn.Active,//显示在旁边第二组
-                    };
-                    vscode.window.showTextDocument(vscode.Uri.file(fn), options);
+                    util.Window.ShowFile(fileName, selection);
+                    isOpen = true;
+                    openCall(selection, selections);
                 }
                 lineNum++;
+            };
+            objReadline.on('line', function(line){
+                if (!isOpen) match_oepn(line);
             });
+        },
+        ApiController(controllerName, funcName){
+            let c = new util.Controller(controllerName);
+            c.JumpFunc(funcName);
         }
     },
     Path:{

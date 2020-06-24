@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-06-12 11:35:27
+ * @LastEditTime: 2020-06-24 10:55:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\extension.js
@@ -24,6 +24,12 @@ const _this = {
                 util.showBarMessage('检测到拥有weblog.db，已激活weblog功能', 5000)
             }
         }
+    },
+    createJumpTab() {
+        //控制器 路径（无法匹配到时就删除并刷新）
+        //方法 行号 （无法匹配到时就删除并刷新）
+        //类型
+        //api路径 - 页面网址 双向关联
     },
     /**
      * 测试弹窗

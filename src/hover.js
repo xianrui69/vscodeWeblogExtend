@@ -1,3 +1,11 @@
+/*
+ * @Author: your name
+ * @Date: 2020-05-22 14:38:51
+ * @LastEditTime: 2020-06-24 09:58:29
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \vscode\src\hover.js
+ */ 
 const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
@@ -30,14 +38,21 @@ module.exports = function(context) {
                     return;
                 }
                 else{
+                    if (word != _match[1]) return;
                     url += _match[1]
                 }
                 setTimeout(() => {
-                    resolve(new vscode.Hover(`* **名称**：${url}\n* **版本**：${1}\n* **许可协议**：${1}`));
+                    resolve(new vscode.Hover(`* ${url}\n* **2**：${word}\n* **许可协议**：${1}`));
                 }, 100);//模拟一下异步
             });
         }
     };
     // 注册鼠标悬停提示 C#
-    context.subscriptions.push(vscode.languages.registerHoverProvider({ scheme: 'file', language: 'csharp' }, b));
+    context.subscriptions.push(vscode.languages.registerHoverProvider(
+        [{ 
+            scheme: 'file', language: 'csharp',
+            //文件位置匹配 位于这个目录下的子目录（子子目录也行） 不忽略大小写
+            pattern: '**/ApiControllers/**'
+        }]
+        , b));
 };
