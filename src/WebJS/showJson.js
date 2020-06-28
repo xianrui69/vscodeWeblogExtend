@@ -10,7 +10,6 @@ const vscode = require('vscode');
 const util = require('../util');
 const fs = require('fs');
 const path = require('path');
-
 /**
  * 存放所有消息回调函数，根据 message.cmd 来决定调用哪个方法
  */
@@ -55,7 +54,7 @@ module.exports = function(context) {
         );
         let global = { panel};
         
-        panel.webview.html = util.Web.getWebViewContent(context, 'src/view/showJson/showJson.html');
+        panel.webview.html = util.Web.getWebViewContent(context, 'lib/view/showJson/showJson.html');
         panel.webview.onDidReceiveMessage(message => {
             if (messageHandler[message.cmd]) {
                 messageHandler[message.cmd](global, message);
@@ -93,7 +92,7 @@ module.exports = function(context) {
                 enableScripts: true, // 启用JS，默认禁用
             }
         );
-        panel.webview.html = util.Web.getWebViewContent(context, 'src/view/showJson/showJson.html');
+        panel.webview.html = util.Web.getWebViewContent(context, 'lib/view/showJson/showJson.html');
         panel.webview.onDidReceiveMessage(message => {
             if (messageHandler[message.cmd]) {
                 messageHandler[message.cmd](global, message);

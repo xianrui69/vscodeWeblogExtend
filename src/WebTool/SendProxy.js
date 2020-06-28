@@ -10,10 +10,15 @@
 const code_dir = __dirname + '\\';//代码路径
 const exec = require('child_process').exec;
 const iconv = require('iconv-lite');
+const vscode = require('vscode');
 const util = require('../util');
 const fs = require('fs');
 const UUID = require('uuid');
-const encoding = 'utf-8';//默认命令行的编码格式应该是
+
+const encoding = {
+    py: 'utf-8',
+    cmdErr: 'cp936',//默认命令行的编码格式应该是 除非写注册表 否则命令行的编码就是他
+}
 const pythonHelper = {
     pythonVersionFile:{
         '2': 'Request_PY2.py',
@@ -64,6 +69,43 @@ module.exports = {
         callBack(val);
     },
     /**
+     * 响应请求的基类 对响应进行一个通用的处理
+     * @param {*} fileName 响应关联的文件 （通过文件名的方式与py交互的请求文件）
+     * @param {*} stdout 响应 输出 （python的打印）
+     * @param {*} stderr 错误信息
+     * @param {*} error 错误
+     * @param {*} callBack 回调函数 
+     * @param {*} cmdStr 易读性的参数 可以直接看到cmd命令
+     * @param {*} data 易读性的参数 可以直接看到请求的内容是什么
+     */
+    _baseResponse(fileName, stdout, stderr, error, callBack, cmdStr, data){
+            setTimeout(() => {
+                fs.unlink(fileName, ()=>{});//删除请求的文件记录
+            }, 120)
+            cmdStr = cmdStr//用于看cmd执行的命令是什么样的
+            let stdoutStr = iconv.decode(stdout, encoding.py)
+            let stderrStr = iconv.decode(stderr, encoding.cmdErr)
+            if(stdoutStr.length >1){//返回值
+                callBack(stdoutStr)
+            }else if(error){
+                let errMsgs = ['由于目标计算机积极拒绝，无法连接', '身份验证错误'];
+                let _result = {
+                    "success": false,
+                    "message": errMsgs.filter(e => stderrStr.indexOf(e) != -1).join(',')
+                        || stderrStr,
+                    "data": stderrStr
+                };
+                setTimeout(() => {
+                    vscode.window.showInformationMessage('请求失败：' + _result.message);
+                    //util.showInfo('请求失败：' + _result.message);//子线程里面无法调用util 暂时还不知道是怎么回事
+                }, 100);
+                callBack(JSON.stringify(_result));
+            } else {
+                callBack('')
+                console.log('没有输出');
+            }
+    },
+    /**
      * 重发一个请求 根据一行
      * @param {*} row sqlite里的一行数据
      * @param {*} callBack 回掉函数 里面是一个请求返回的text
@@ -85,30 +127,15 @@ module.exports = {
                 util.showError('写文件错误')
         });//记录最后一次请求 方便调试
         fn = code_dir + 'requests_' + UUID.v1() + '.json'//产生唯一的文件 方便多文档读写
-        fs.writeFile(fn, jsonStr, function(err) { 
+        fs.writeFile(fn, jsonStr, (err)  => { 
             if (err) { 
                 util.showError('写文件错误')//异常抛出
                 return console.error(err);
             }
             let cmdStr = `python ${code_dir}${pythonFileName} ${fn}`
-            exec(`python ${pythonFileName} ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
-                setTimeout(() => {
-                    fs.unlinkSync(fn);//删除请求的文件记录
-                }, 20)
-                cmdStr = cmdStr//用于看cmd执行的命令是什么样的
-                let stdoutStr = iconv.decode(stdout, encoding)
-                let stderrStr = iconv.decode(stderr, encoding)
-                if(stdoutStr.length >1){//返回值
-                    callBack(stdoutStr)
-                }else if(error){
-                    _data = _data
-                    debugger
-                    callBack('错误堆栈 : '+stderrStr)
-                } else {
-                    callBack('')
-                    console.log('没有输出');
-                }
-            });
+            exec(`python ${pythonFileName} ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, (error,stdout,stderr) =>
+                this._baseResponse(fn, stdout, stderr, error, callBack, cmdStr, _data)
+            );
         });
     },
     Send(data, callBack){
@@ -122,30 +149,15 @@ module.exports = {
         let pythonFileName = this.PythonFileName;
         let jsonStr = JSON.stringify(data);
         let fn = code_dir + 'send_' + UUID.v1() + '.json'//产生唯一的文件 方便多文档读写
-        fs.writeFile(fn, jsonStr, function(err) { 
+        fs.writeFile(fn, jsonStr, (err) => { 
             if (err) { 
                 util.showError('写文件错误')//异常抛出
                 return console.error(err);
             }
             let cmdStr = `python ${code_dir}${pythonFileName} ${fn}`
-            exec(`python ${pythonFileName} ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, function(error,stdout,stderr){
-                setTimeout(() => {
-                    fs.unlinkSync(fn);//删除请求的文件记录
-                }, 120)
-                cmdStr = cmdStr//用于看cmd执行的命令是什么样的
-                let stdoutStr = iconv.decode(stdout, encoding)
-                let stderrStr = iconv.decode(stderr, encoding)
-                if(stdoutStr.length >1){//返回值
-                    callBack(stdoutStr)
-                }else if(error){
-                    data = data
-                    debugger
-                    callBack('错误堆栈 : '+stderrStr)
-                } else {
-                    callBack('')
-                    console.log('没有输出');
-                }
-            });
+            exec(`python ${pythonFileName} ${fn.replace(code_dir, '')}`,{ cwd: __dirname, encoding: null}, (error,stdout,stderr) =>
+                this._baseResponse(fn, stdout, stderr, error, callBack, cmdStr, data)
+            );
         });
     }
 }

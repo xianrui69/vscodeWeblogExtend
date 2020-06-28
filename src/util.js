@@ -4,7 +4,7 @@ const os = require('os');
 const path = require('path');
 const vscode = require('vscode');
 const exec = require('child_process').exec;
-const SendProxy = require('./WebTool/SendProxy');
+const SendProxy = require('../src/WebTool/SendProxy');
 const utilConsts = {
     String:{
         endCharts: [' ', '('],
@@ -53,11 +53,19 @@ const util = {
                 Method: 'GET',
                 Query: `?credential=${configs['autoUserNo']}&password=${configs['autoPWD']}`,
             }, (data) => {
-                data = JSON.parse(data)
-                let token = data.data.token
-                typeof(callBack) === 'function' && callBack(token);
+                try {
+                    data = JSON.parse(data)
+                    if (data.success === false) return;
+                    let token = data.data.token
+                    typeof(callBack) === 'function' && callBack(token);
+                } catch (error) {
+                    util.showError('token获取失败 连接可能被拒绝');
+                    return;
+                }
             });
         },
+        //最后一次连接失败的时间
+        lastConnErrDate: undefined,
     },
     Cache:{
         Controllers:{//使用这些索引器来访问缓存 使得save等等可以触发
