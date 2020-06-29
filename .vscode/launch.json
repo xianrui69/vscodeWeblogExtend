@@ -7,27 +7,14 @@
     "configurations": [
         {"name":"Python: 当前文件","type":"python","request":"launch","program":"${file}","console":"integratedTerminal"},
         {
-            "name": "Launch Extension",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": ["--extensionDevelopmentPath=${workspaceRoot}" ],
-            "stopOnEntry": false,
-            "sourceMaps": true,
-            // 注意这里需要使用 Webpack 的输出文件路径。
-            "outFiles": [ "${workspaceRoot}/dist/**/*.js" ],
-            // 在 Launch 之前的前置任务，定义见下文。
-            //"preLaunchTask": "npm: watch"
-            
-        },
-        {
             "name": "Extension",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"
-            ]
+            ],
+            "preLaunchTask": "npm: webpack-dev"
         },
         {
             "name": "Extension Tests",

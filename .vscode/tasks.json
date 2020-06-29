@@ -3,36 +3,10 @@
     "tasks": [
         {
             "type": "npm",
-            "script": "watch",
-            "problemMatcher": {
-                "owner": "typescript",
-                "pattern": [
-                    {
-                        "regexp": "\\[tsl\\] ERROR",
-                        "file": 1,
-                        "location": 2,
-                        "message": 3
-                    }
-                ],
-                "background": {
-                    "activeOnStart": true,
-                    "beginsPattern": "Compilation \\w+ starting…",
-                    "endsPattern": "Compilation\\s+finished"
-                }
-            },
-            "isBackground": true,
-            "presentation": {
-                "reveal": "never"
-            },
-            "group": "build",
-            "label": "npm: watch"
-        },
-        {
-            "type": "npm",
-            "script": "vscode:prepublish",
+            "script": "webpack-dev",
             "problemMatcher": [],
-            "label": "npm: vscode:prepublish",
-            "detail": "webpack --none lazy",
+            "label": "npm: webpack-dev",
+            "detail": "webpack --mode development",
             "group": {
                 "kind": "build",
                 "isDefault": true

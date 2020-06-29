@@ -1,9 +1,20 @@
+/*
+ * @Author: your name
+ * @Date: 2020-06-29 09:15:05
+ * @LastEditTime: 2020-06-29 10:56:26
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \vscode\webpack.config.js
+ */ 
 //@ts-check
 
 'use strict';
 
 const path = require('path');
 const htmlWebpackPlugin = require('html-webpack-plugin');   //  引入html-webpack-plugin插件
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");//发布之前删除
+const CopyWebpackPlugin = require('copy-webpack-plugin');   // 引入插件复制静态资源
+const EncodingPlugin = require('webpack-encoding-plugin');
 // const fs = require('fs');
 // var nodeModules = {vscode: 'commonjs vscode'};
 // fs.readdirSync('node_modules')
@@ -59,9 +70,22 @@ const config = {
       }
     ]
   },
-  // plugins: [   // 打包需要的各种插件
-  //   new htmlWebpackPlugin({   // 打包HTML
-  //   })
-  // ],
+  plugins: [   // 打包需要的各种插件
+    new CleanWebpackPlugin(),
+    // new EncodingPlugin({
+    //   encoding: 'UTF-8'
+    // }),
+    new CopyWebpackPlugin({
+        patterns:[    // 2.实例化插件
+          {
+            from: 'src/WebTool/*.py',
+            to: './',
+            transformPath(targetPath, absolutePath) {
+              return targetPath.replace('src\\WebTool\\', '')
+            },
+          },// 3.  数组里每一个对象都是一个赋值规则  ，to相对的就是输出目录dist 所以 to后面的目录就不用再写dist了  ，to: "./" 表示直接放到输入目录dist 文件夹下
+        ]
+    })
+  ],
 };
 module.exports = config;

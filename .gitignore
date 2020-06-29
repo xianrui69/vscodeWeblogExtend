@@ -1,6 +1,4 @@
 node_modules
 .vscode-test/
-.history
-*.zip
-*.rar
+.history/
 *.vsix
