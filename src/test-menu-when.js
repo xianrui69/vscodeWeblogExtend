@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-22 14:38:51
- * @LastEditTime: 2020-06-12 11:37:29
+ * @LastEditTime: 2020-07-01 15:17:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\test-menu-when.js
@@ -105,6 +105,9 @@ module.exports = function(context) {
                                 //reSendOutChannel.show(true)
                                 try {
                                     let _data = JSON.parse(str)
+                                    if (_data['message'] == '身份验证错误') util.Web.loadToken((_token) =>{
+                                        token = _token;
+                                    }, true);//重载token
                                     util.Web.showJson(getData(_data), url + '的重发结果');
                                     reSendOutChannel.appendLine(JSON.stringify(_data, null, 2))//请求的重发
                                 } catch (error) {

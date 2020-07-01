@@ -44,10 +44,12 @@ const util = {
         /**
          * 根据配置 调用登录 获取json 调用回调函数
          * @param {*} callBack 回调函数
+         * @param {*} isFail token是否失效
          */
-        loadToken(callBack){
+        loadToken(callBack, isFail = false){
             let myName = 'vscodePluginDemo';//插件名
             let configs = vscode.workspace.getConfiguration()[myName];
+            if (!isFail && configs['SendToken']) return configs['SendToken'];
             SendProxy.Send({
                 Url: configs['autoUrl'] + '/api/App/CheckLogin4App',
                 Method: 'GET',
@@ -57,6 +59,7 @@ const util = {
                     data = JSON.parse(data)
                     if (data.success === false) return;
                     let token = data.data.token
+                    vscode.workspace.getConfiguration().update(myName+'.SendToken', token, true);//更新配置里的token
                     typeof(callBack) === 'function' && callBack(token);
                 } catch (error) {
                     util.showError('token获取失败 连接可能被拒绝');

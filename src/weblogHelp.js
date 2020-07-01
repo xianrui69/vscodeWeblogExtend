@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:14
- * @LastEditTime: 2020-06-24 10:55:22
+ * @LastEditTime: 2020-06-30 09:31:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\extension.js
@@ -71,7 +71,7 @@ const _this = {
         // searchLogInputDto["Success"] = searchLogInputDto.Success;
         if (!searchLogInputDto.hasOwnProperty('CurrentPageIndex')) searchLogInputDto['CurrentPageIndex'] = 0
         if (!searchLogInputDto.hasOwnProperty('PageSize')) searchLogInputDto['PageSize'] = 20
-        if (!searchLogInputDto.hasOwnProperty('OrderField')) searchLogInputDto['OrderField'] = 'date'
+        if (!searchLogInputDto.hasOwnProperty('OrderField')) searchLogInputDto['OrderField'] = 'id'
         if (!searchLogInputDto.hasOwnProperty('IsDesc')) searchLogInputDto['IsDesc'] = true
         const orderStr = `ORDER BY ${searchLogInputDto.OrderField} ${searchLogInputDto.IsDesc ? 'Desc': ''}
                         limit $Skip,$Take`;

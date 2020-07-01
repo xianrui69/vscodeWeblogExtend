@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-19 10:13:15
- * @LastEditTime: 2020-06-12 10:51:55
+ * @LastEditTime: 2020-07-01 15:27:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \vscode-plugin-demo-master\src\welcome.js
@@ -94,7 +94,7 @@ module.exports = function(context) {
             }
         );
         let global = { panel};
-        panel.webview.html = util.Web.getWebViewContent(context, 'src/view/welcome/custom-welcome.html');
+        panel.webview.html = util.Web.getWebViewContent(context, 'lib/view/welcome/custom-welcome.html');
         panel.webview.onDidReceiveMessage(message => {
             if (messageHandler[message.cmd]) {
                 messageHandler[message.cmd](global, message);
