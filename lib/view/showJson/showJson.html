@@ -89,7 +89,7 @@
             <hr/>
             <h1>{{ data.key }}</h1>
             <hr/>
-            <json-view :data="datas[data.key]" :deep="deep"/>
+            <json-view :data="datas[data.key]" :deep="deep" :closed="closed" :font-size="fontSize" :theme="theme" :line-height="lineHeight" />
         </div>
     </div>
     <script src="../../jquery/jquery.min.js"></script>
