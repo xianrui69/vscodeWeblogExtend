@@ -16,7 +16,7 @@ def ajax(data):
         head = json.loads(data['Headers'])#里面一般包含了ContentType
         #head['Accept-Encoding'] = 'utf-8'
     p = {}
-    if 'Body' in data: p = data['Body']
+    if 'Body' in data: p = data['Body'].encode('utf-8')#有中文的时候需要
     for pn in head:
         if type(head[pn]) == list:
             head[pn] = ';'.join(head[pn])
@@ -51,12 +51,13 @@ def ajax(data):
             print(data)
             pass
 filePath = os.getcwd() + "\\lastRequests.json"#当前目录下
+
 if len(sys.argv) > 1:
     filePath = sys.argv[1]
 if os.path.exists(filePath):
     data = ''
     #得到传输的json文件的内容 并解析出来
-    with open(filePath, "r") as f:
+    with open(filePath, "r", encoding='utf-8') as f:#encoding 才能支持中文loads
         data = f.read()
         data = json.loads(data)
         #print(data)

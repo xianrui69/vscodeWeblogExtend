@@ -10,7 +10,7 @@
     "version": "1.0.4",
     "publisher": "sxei",
     "engines": {
-        "vscode": "^1.27.0"
+        "vscode": "^1.28.0"
     },
     "categories": [
         "Other"
@@ -112,32 +112,6 @@
                 "path": "./snippets/html.json"
             }
         ],
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "beautifulGirl",
-                    "title": "美女",
-                    "icon": "images/beautifulGirl.svg"
-                }
-            ]
-        },
-        "views": {
-            "beautifulGirl": [
-                {
-                    "id": "beautifulGirl1",
-                    "command": "extension.showLastWebLog",
-                    "name": "国内美女"
-                },
-                {
-                    "id": "beautifulGirl2",
-                    "name": "国外美女"
-                },
-                {
-                    "id": "beautifulGirl3",
-                    "name": "人妖"
-                }
-            ]
-        },
         "iconThemes": [
             {
                 "id": "testIconTheme",
@@ -153,7 +127,7 @@
     },
     "devDependencies": {
         "@types/node": "^14.0.11",
-        "@types/vscode": "^1.27.0",
+        "@types/vscode": "^1.28.0",
         "aws-sdk": "^2.705.0",
         "clean-webpack-plugin": "^3.0.0",
         "copy-webpack-plugin": "^6.0.2",
