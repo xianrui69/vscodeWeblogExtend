@@ -106,6 +106,10 @@ const util = {
         if (!fileName) {
             let findFiels = util.File.ApiControllers.getControllers(this.baseName);
             if (findFiels.length > 0){
+                if (findFiels.length > 1){
+                    util.showInfo('匹配到了多个api控制器，默认选择了第一个.'
+                        + findFiels.map(f => f.fullName).join(','));
+                }
                 fileName = findFiels[0].fullName;
                 findFiels.forEach(e => setCache(name, e.fullName));
                 util.File.ApiControllers.files.filter(f => !util.Cache.Controllers.Get(f.cname))
@@ -125,7 +129,7 @@ const util = {
         this.JumpFunc = function(funcName){
             let _func = curController.getFunc(funcName);
             let _jump = () =>{
-                util.Jump.ByFileToFunc(fileName, funcName, (selection, selections) =>{
+                fileName && util.Jump.ByFileToFunc(fileName, funcName, (selection, selections) =>{
                     if (!_func){
                         _func = AddFunc(funcName, selection);
                     }else _func.selection = selection;
@@ -134,7 +138,7 @@ const util = {
                     })
                 })
             };
-            if (_func && _func.selection){
+            if (_func && _func['selection']){
                 util.Window.ShowFile(fileName, _func.selection, textEdit => {
                     let text = textEdit.document.getText(textEdit.document.getWordRangeAtPosition(_func.selection.start));
                     if (text == _func.name) return;
@@ -158,7 +162,7 @@ const util = {
             return _func;
         }
         this.getFunc = (funcName) =>{
-            return curController.funcs[funcName];
+            return curController.funcs[funcName] || {};
         }
     },
     Document:{
@@ -248,9 +252,15 @@ const util = {
                 let path = util.Path.getWebPath() + "\\Controllers\\ApiControllers";
                 util.File.findFile(path, '');
             },
+            /**
+             * 寻找控制器
+             * 找不到的时候 忽略大小写
+             */
             getControllers(controllerFileBaseName){
                 if (this.files.length == 0) this.loadFiles();
-                return this.files.filter(f => f.name == controllerFileBaseName);
+                let arr = this.files.filter(f => f.name == controllerFileBaseName);
+                if (arr.length === 0) arr = this.files.filter(f => f.name.toLowerCase() == controllerFileBaseName.toLowerCase());
+                return arr;
             },
         },
         findFile(dir, fn, result) {
@@ -331,22 +341,38 @@ const util = {
                 let _left = _match[1].length, _right = _match[1].length + _match[2].length;
                 selection = new vscode.Range(new vscode.Position(lineNum, _left), new vscode.Position(lineNum, _right));
                 selections.push({funcName:_funcName,selection:selection});
-                if (_funcName == funcName) {
-                    objReadline.close();//立即触发事件
-                    readStream.destroy();//流关闭
+                if (_funcName.toLowerCase() == funcName.toLowerCase()) {
                     util.Window.ShowFile(fileName, selection);
                     isOpen = true;
                     openCall(selection, selections);
+                    objReadline.close();//立即触发事件
+                    readStream.destroy();//流关闭
                 }
                 lineNum++;
             };
             objReadline.on('line', function(line){
                 if (!isOpen) match_oepn(line);
             });
+            objReadline.on('close', function(line){
+                if (!isOpen) {
+                    util.showInfo(`路径 ${fileName} 里未匹配到方法 ${funcName}`);
+                }
+            });
         },
         ApiController(controllerName, funcName){
             let c = new util.Controller(controllerName);
             c.JumpFunc(funcName);
+        },
+        ApiUrl(apiUrl){
+            let match = '\\/api\\/(.+?)\\/(.+?)(\\?.+)?';
+            let _match = apiUrl.match(eval(`/^${match}$/i`));
+            if (!_match || _match.length < 3) {
+                util.showInfo(`当前行没有格式为 "/api/xxx/xx" 的字符串`);
+                return;
+            }
+            let controllerName = _match[1], funcName = _match[2];
+            util.showBarMessage(`控制器:${controllerName},方法名:${funcName}`, 5);
+            return this.ApiController(controllerName, funcName);
         }
     },
     Path:{

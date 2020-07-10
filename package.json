@@ -85,7 +85,6 @@
         "menus": {
             "editor/context": [
                 {
-                    "when": "resourceLangId != csharp",
                     "command": "extension.apiControllerJump",
                     "group": "navigation@8"
                 },

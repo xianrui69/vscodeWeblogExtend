@@ -140,28 +140,38 @@ module.exports = function(context) {
         if (['aspnetcorerazor', 'javascript'].indexOf(curLanguageId) == -1){
             util.showInfo(`当前是${curLanguageId}语言调用的apiControllerJump`);
         }
-        let curStr = util.String.findNearStr(lineText, textEditor.selection.start.character, ['"', "'"], false);
+        let curStr = util.String.findNearStr(lineText, textEditor.selection.start.character, ['"', "'", '`'], false) || '';
         let match = '\\/api\\/(.+?)\\/(.+?)';
-        if (curStr.length > 1){
-            let _match = curStr.match(eval(`/^${match}$/`));
+        let _match = curStr.match(eval(`/^${match}$/i`));
+        if (_match) {
+            util.showBarMessage(`已匹配到api字符串${curStr}`, 5000)
+        }else{
+            _match = lineText.match(eval(`/[\'\"](${match})[\'\"]/i`))
             if (_match) {
+                curStr = _match[1];
                 util.showBarMessage(`已匹配到api字符串${curStr}`, 5000)
             }else{
-                _match = lineText.match(eval(`/[\'\"](${match})[\'\"]/`))
-                if (_match) {
-                    curStr = _match[1];
-                }else{
-                    util.showInfo(`当前行没有格式为 "/api/xxx/xx" 的字符串`);
-                    return;
-                }
+                util.showInfo(`test当前行没有格式为 "/api/xxx/xx" 的字符串`);
+                vscode.window.showInputBox({// 这个对象中所有参数都是可选参数
+                    password:false, // 输入内容是否是密码
+                    ignoreFocusOut:false, // 默认false，设置为true时鼠标点击别的地方输入框不会消失
+                    placeHolder:'需要跳转请输入api字符串', // 在输入框内的提示信息
+                    prompt:'例如:/api/apply/get', // 在输入框下方的提示信息
+                    validateInput:function(text){// 对输入内容进行验证并返回
+                        _match = text.match(eval(`/^${match}$/i`));
+                        if (!_match){
+                            return '请输入例如 /api/apply/get 格式的字符串'
+                        }
+                        return undefined;
+                    }
+                }).then(function(msg){
+                    if(msg) {
+                        util.Jump.ApiUrl(msg);
+                    }
+                });
+                return;
             }
         }
-        let _match = curStr.match(eval(`/^${match}$/`));
-        if (!_match || _match.length < 3) {
-            util.showInfo(`当前行没有格式为 "/api/xxx/xx" 的字符串`);
-            return;
-        }
-        let controllerName = _match[1], funcName = _match[2];
-        util.Jump.ApiController(controllerName, funcName);
+        util.Jump.ApiUrl(curStr);
     }));
 };
