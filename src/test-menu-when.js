@@ -17,9 +17,6 @@ util.Web.loadToken((_token) => {
 });
 
 module.exports = function(context) {
-    context.subscriptions.push(vscode.commands.registerCommand('extension.demo.testMenuShow', () => {
-        util.showInfo(`你点我干啥，我长得很帅吗？`);
-    }));
     let webLogOutChannel = vscode.window.createOutputChannel('最后一次调用');
     let reSendOutChannel = vscode.window.createOutputChannel('重发');
     // 编辑器命令 
@@ -81,7 +78,7 @@ module.exports = function(context) {
                 return
             }else{//弹出最近一次调用
                 try {
-                    let firstData = data.rows[0]
+                    let firstData = data.rows[0];
                     vscode.window.showInformationMessage("是否照这个log请求一次",'是','否')
                     .then(function(select){
                         if (select == '是'){
@@ -131,7 +128,7 @@ module.exports = function(context) {
             }
         });
     }));
-    
+    let oldApiUrl = '/api/';
     // 编辑器命令 
     context.subscriptions.push(vscode.commands.registerTextEditorCommand('extension.apiControllerJump', (textEditor, edit) => {
         const lineText = textEditor.document.lineAt(textEditor.selection.start.line).text
@@ -157,6 +154,8 @@ module.exports = function(context) {
                     ignoreFocusOut:false, // 默认false，设置为true时鼠标点击别的地方输入框不会消失
                     placeHolder:'需要跳转请输入api字符串', // 在输入框内的提示信息
                     prompt:'例如:/api/apply/get', // 在输入框下方的提示信息
+                    value: oldApiUrl,
+                    valueSelection: [0, oldApiUrl.length],
                     validateInput:function(text){// 对输入内容进行验证并返回
                         _match = text.match(eval(`/^${match}$/i`));
                         if (!_match){
@@ -166,6 +165,7 @@ module.exports = function(context) {
                     }
                 }).then(function(msg){
                     if(msg) {
+                        oldApiUrl = msg;
                         util.Jump.ApiUrl(msg);
                     }
                 });

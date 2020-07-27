@@ -42,7 +42,40 @@ module.exports = function(context) {
                     url += _match[1]
                 }
                 setTimeout(() => {
-                    resolve(new vscode.Hover(`* ${url}\n* **2**：${word}\n* **许可协议**：${1}`));
+                    let hosts = {
+                        '本地': 'http://localhost:9076',
+                        '内网-hz': 'http://192.168.30.9:9076',
+                        '内网-kh': 'http://192.168.40.2:9076',
+                        '外网-hz': 'http://hannao.gicp.net:9076',
+                        '外网-kh': 'http://36.26.51.30:9076',
+                    };
+                    let heads = [];
+                    let rows = {
+                        '[网址]({0}{1})': [],
+                        '[日志]({0}/weblog/WebLogIndxe?uri={1})': [],
+                    };
+                    for (const key in hosts) {
+                        heads.push(key)
+                        const _url = hosts[key];
+                        for (const fmt in rows) {
+                            let str = fmt.replace('{0}', _url).replace('{1}', url);
+                            rows[fmt].push(str);
+                        }
+                    }
+                    //得到第一、二排
+                    let tabTxtArr = [
+                        heads.map(h => `| ${h} `).join(''),
+                        heads.map(h => `| - `).join('')
+                    ];
+                    for (const fmt in rows)//得到每个row
+                        tabTxtArr.push(rows[fmt].map(h => `| ${h} `).join(''));
+                    let tabTxt = tabTxtArr.join(`|
+`);
+                    resolve(new vscode.Hover(
+`**${url}** 
+
+${tabTxt}`));//支持动图  ![一个测试动图](https://image.zhangxinxu.com/image/blog/201912/flex-demo-s.gif)
+                    /* 他使用的markdown解析语法 */
                 }, 100);//模拟一下异步
             });
         }

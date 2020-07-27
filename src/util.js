@@ -102,6 +102,7 @@ const util = {
         this.type = 'Controller';
         this.name = name;
         this.baseName = `${name}Controller.cs`;
+        this.JumpFunc = () => {};
         let setCache = (name, fn) => '';
         if (!fileName) {
             let findFiels = util.File.ApiControllers.getControllers(this.baseName);
@@ -117,6 +118,9 @@ const util = {
                         let c = new util.Controller(e.cname, e.fullName);
                         util.Cache.Controllers.Set(e.cname, c);
                     });
+            } else {
+                this.errorMsg = '未找到对应的控制器' + this.baseName;
+                return this;
             }
         }else {
             if (!fs.existsSync(fileName)) {
@@ -133,6 +137,7 @@ const util = {
                     if (!_func){
                         _func = AddFunc(funcName, selection);
                     }else _func.selection = selection;
+
                     selections.filter(f => !curController.getFunc(f.funcName)).forEach(f =>{//注册并方法
                         AddFunc(f.funcName, f.selection);
                     })
@@ -141,8 +146,8 @@ const util = {
             if (_func && _func['selection']){
                 util.Window.ShowFile(fileName, _func.selection, textEdit => {
                     let text = textEdit.document.getText(textEdit.document.getWordRangeAtPosition(_func.selection.start));
-                    if (text == _func.name) return;
-                    else _jump();
+                    if (text == _func.name) return;//如果那个位置的文本就是方法名 跳转完成
+                    else _jump();//否则重新跳转
                 })
                 return;
             }
@@ -355,12 +360,21 @@ const util = {
             });
             objReadline.on('close', function(line){
                 if (!isOpen) {
-                    util.showInfo(`路径 ${fileName} 里未匹配到方法 ${funcName}`);
+                    openCall(undefined, selections);
+                    vscode.window.showInformationMessage(`未匹配到方法 ${funcName},是否仍然打开控制器`,'是','否')
+                    .then(function(select){
+                        if (select == '是'){//从最上面开始打开 如果没有方法就去00位置 否则打开到第一个方法所在位置
+                            let s = selections.length > 0 ? selections[0].selection
+                                : new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0));
+                            util.Window.ShowFile(fileName, s);
+                        }
+                    });
                 }
             });
         },
         ApiController(controllerName, funcName){
             let c = new util.Controller(controllerName);
+            if (c.errorMsg) util.showInfo(c.errorMsg);
             c.JumpFunc(funcName);
         },
         ApiUrl(apiUrl){
