@@ -12,6 +12,7 @@ const utilConsts = {
     }
 }
 const util = {
+    testWord: '',
     Web:{
         /**
          * 从某个HTML文件读取能被Webview加载的HTML内容
@@ -186,6 +187,10 @@ const util = {
             }
             return '';
         },
+        /**
+         * 缓存最后一次运行了hover的位置
+         */
+        hoverPosition:{},
     },
     String:{
         /**
@@ -321,6 +326,7 @@ const util = {
                 preview: true,
                 viewColumn: vscode.ViewColumn.Active,//显示在旁边第二组
             };
+            //vscode.Uri.parse
             vscode.window.showTextDocument(vscode.Uri.file(fileName), options).then(textEditor => {
                 showCall(textEditor)
             });

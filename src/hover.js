@@ -25,7 +25,11 @@ module.exports = function(context) {
                 const fileName    = document.fileName;
                 const workDir     = path.dirname(fileName);
                 const word        = document.getText(document.getWordRangeAtPosition(position));
-
+                util.Document['hoverPosition'] = {
+                    date: new Date(),
+                    fileName: fileName,
+                    word: word
+                };
                 let url = '/api/'
                 //可以缓存这个路径不是一个控制器 更新时间
                 let ControllerName = util.Document.isController(document);
@@ -69,12 +73,12 @@ module.exports = function(context) {
                     ];
                     for (const fmt in rows)//得到每个row
                         tabTxtArr.push(rows[fmt].map(h => `| ${h} `).join(''));
-                    let tabTxt = tabTxtArr.join(`|
-`);
-                    resolve(new vscode.Hover(
-`**${url}** 
-
-${tabTxt}`));//支持动图  ![一个测试动图](https://image.zhangxinxu.com/image/blog/201912/flex-demo-s.gif)
+                    let tabTxt = tabTxtArr.join(`|\n`);
+                    let ms = new vscode.MarkdownString();
+                    ms.appendMarkdown(`**${url}**\n\n${tabTxt}\n
+[最后调用](command:extension.showLastWebLog_hover) [全选](command:editor.action.selectAll) [打开菜单](command:editor.action.showContextMenu)`);//光标取的select 没有取鼠标所在光标
+                    ms.isTrusted = true;
+                    resolve(new vscode.Hover(ms));//支持动图  ![一个测试动图](https://image.zhangxinxu.com/image/blog/201912/flex-demo-s.gif)
                     /* 他使用的markdown解析语法 */
                 }, 100);//模拟一下异步
             });
