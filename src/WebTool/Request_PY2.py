@@ -30,7 +30,7 @@ def ajax(data):
         else:
             resp = requests.get(url,headers=head);
     except BaseException as identifier:
-        print '连接超时！'
+        print('连接超时！')
         return
     if resp.status_code == 200:
         str = ''
@@ -44,27 +44,29 @@ def ajax(data):
                 elif reEncoding == 'gzip':
                     str = gzip.decompress(resp.content).decode('utf-8')
             except BaseException as identifier:
-                print '解码异常 请调试'
+                print('解码异常 请调试')
                 pass
-        if str != '': print str#
+        if str != '': print(str)#
     else:
         try:
             resp.encoding='utf-8'
-            print resp.text
+            print(resp.text)
             pass
         except BaseException as identifier:
             data = gzip.decompress(resp.content).decode("utf-8")
-            print data
+            print(data)
             pass#
 filePath = os.getcwd() + "\\src\\WebTool\\lastRequests.json"#当前目录下
 if len(sys.argv) > 1:
     filePath = sys.argv[1]
-if os.path.exists(filePath):
-    data = ''
-    #得到传输的json文件的内容 并解析出来
-    with open(filePath, "r", encoding='utf-8') as f:
-        data = f.read()
-        data = json.loads(data)
-        #print(data)
-    ajax(data)
-    
+def ByFileAjax(_filePath):
+    if os.path.exists(filePath):
+        data = ''
+        #得到传输的json文件的内容 并解析出来
+        with open(filePath, "r", encoding='utf-8') as f:
+            data = f.read()
+            data = json.loads(data)
+            #print(data)
+        ajax(data)
+
+ByFileAjax(filePath);

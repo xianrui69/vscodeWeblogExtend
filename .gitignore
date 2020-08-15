@@ -2,3 +2,4 @@ node_modules
 .vscode-test/
 .history/
 *.vsix
+GetAndSend_PY2.exe

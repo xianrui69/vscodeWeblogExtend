@@ -50,16 +50,18 @@ def ajax(data):
             data = gzip.decompress(resp.content).decode("utf-8")
             print(data)
             pass
-filePath = os.getcwd() + "\\lastRequests.json"#当前目录下
 
+filePath = os.getcwd() + "\\lastRequests.json"#当前目录下
 if len(sys.argv) > 1:
     filePath = sys.argv[1]
-if os.path.exists(filePath):
-    data = ''
-    #得到传输的json文件的内容 并解析出来
-    with open(filePath, "r", encoding='utf-8') as f:#encoding 才能支持中文loads
-        data = f.read()
-        data = json.loads(data)
-        #print(data)
-    ajax(data)
-    
+def ByFileAjax(_filePath):
+    if os.path.exists(filePath):
+        data = ''
+        #得到传输的json文件的内容 并解析出来
+        with open(filePath, "r", encoding='utf-8') as f:#encoding 才能支持中文loads
+            data = f.read()
+            data = json.loads(data)
+            #print(data)
+        ajax(data)
+
+ByFileAjax(filePath);
